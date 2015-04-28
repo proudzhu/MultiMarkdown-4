@@ -17,6 +17,10 @@
 
 //#include "parser.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Main API commands */
 
 char * markdown_to_string(const char * source, unsigned long extensions, int format);
@@ -175,3 +179,7 @@ struct link_data {
 };
 
 typedef struct link_data link_data;
+
+#ifdef __cplusplus
+}
+#endif
