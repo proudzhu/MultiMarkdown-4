@@ -114,6 +114,7 @@ char* g_string_free(GString* ripString, bool freeCharacterData)
 	}
 	
 	free(ripString);
+	ripString = NULL;
 	
 	return returnedString;
 }
