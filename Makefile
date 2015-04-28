@@ -11,11 +11,11 @@
 #
 # - Fletcher T. Penney
 
-CFLAGS ?= -Wall -g -O3 -include GLibFacade.h
+CFLAGS ?= -Wall -g -O3 -include GLibFacade.h -fPIC
 PROGRAM = multimarkdown
 VERSION = 4.7
 
-OBJS= multimarkdown.o parse_utilities.o parser.o GLibFacade.o writer.o text.o html.o latex.o memoir.o beamer.o lyx.o lyxbeamer.o opml.o odf.o critic.o rng.o rtf.o transclude.o toc.o
+OBJS= parse_utilities.o parser.o GLibFacade.o writer.o text.o html.o latex.o memoir.o beamer.o lyx.o lyxbeamer.o opml.o odf.o critic.o rng.o rtf.o transclude.o toc.o
 
 # Common prefix for installation directories.
 # NOTE: This directory must exist when you start the install.
@@ -41,7 +41,7 @@ endif
 OUR_GREG=greg/greg
 GREG?=$(OUR_GREG)
 
-ALL : $(PROGRAM) enumMap.txt
+ALL : $(PROGRAM) enumMap.txt library
 static : $(PROGRAM) enumMap.txt
 
 %.o : %.c parser.h
@@ -53,8 +53,12 @@ parser.c : parser.leg $(GREG) parser.h
 $(OUR_GREG): greg
 	$(MAKE) -C greg
 
-$(PROGRAM) : $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS)
+$(PROGRAM) : multimarkdown.c $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< $(OBJS)
+
+library: $(OBJS)
+	$(CC) -shared $(OBJS) -o libmultimarkdown.so
+	ar rcs libmultimarkdown.a $(OBJS)
 
 install: $(PROGRAM) | $(prefix)/bin
 	install -m 0755 multimarkdown $(prefix)/bin
@@ -79,6 +83,7 @@ clean:
 	rm -rf mac_installer/Package_Root/usr/local/bin mac_installer/Support_Root mac_installer/*.pkg; \
 	rm -f mac_installer/Resources/*.html; \
 	rm -rf build
+	rm -f libmultimarkdown.*
 
 # Build for windows on a *nix machine with MinGW installed
 windows: parser.c
