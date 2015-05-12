@@ -11,7 +11,7 @@
 #
 # - Fletcher T. Penney
 
-CFLAGS ?= -Wall -g -O3 -include GLibFacade.h -fPIC
+CFLAGS ?= -std=c99 -Wall -g -O3 -include GLibFacade.h -fPIC
 PROGRAM = multimarkdown
 VERSION = 4.7
 
