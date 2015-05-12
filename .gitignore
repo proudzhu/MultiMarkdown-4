@@ -4,6 +4,10 @@ parser.c
 *.o
 enumMap.txt
 speed*.txt
+.ycm_extra_conf.pyc
+
+# ctags file
+tags
 
 # Xcode
 .DS_Store
