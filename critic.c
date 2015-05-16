@@ -19,28 +19,28 @@
 
 #include "critic.h"
 
-void print_critic_accept_node_tree(GString *out, node *list, scratch_pad *scratch) {
+void print_critic_accept_node_tree(MMD_GString *out, node *list, scratch_pad *scratch) {
 	while (list != NULL) {
 		print_critic_accept_node(out, list, scratch);
 		list = list->next;
 	}
 }
 
-void print_critic_reject_node_tree(GString *out, node *list, scratch_pad *scratch) {
+void print_critic_reject_node_tree(MMD_GString *out, node *list, scratch_pad *scratch) {
 	while (list != NULL) {
 		print_critic_reject_node(out, list, scratch);
 		list = list->next;
 	}
 }
 
-void print_critic_html_highlight_node_tree(GString *out, node *list, scratch_pad *scratch) {
+void print_critic_html_highlight_node_tree(MMD_GString *out, node *list, scratch_pad *scratch) {
 	while (list != NULL) {
 		print_critic_html_highlight_node(out, list, scratch);
 		list = list->next;
 	}
 }
 
-void print_critic_accept_node(GString *out, node *n, scratch_pad *scratch) {
+void print_critic_accept_node(MMD_GString *out, node *n, scratch_pad *scratch) {
 	if (n == NULL)
 		return;
 	
@@ -55,12 +55,12 @@ void print_critic_accept_node(GString *out, node *n, scratch_pad *scratch) {
 		case CRITICHIGHLIGHT:
 		case CRITICADDITION:
 		default:
-			g_string_append_printf(out,"%s",n->str);
+			mmd_g_string_append_printf(out,"%s",n->str);
 			break;
 	}
 }
 
-void print_critic_reject_node(GString *out, node *n, scratch_pad *scratch) {
+void print_critic_reject_node(MMD_GString *out, node *n, scratch_pad *scratch) {
 	if (n == NULL)
 		return;
 
@@ -75,12 +75,12 @@ void print_critic_reject_node(GString *out, node *n, scratch_pad *scratch) {
 		case CRITICHIGHLIGHT:
 		case CRITICDELETION:
 		default:
-			g_string_append_printf(out,"%s",n->str);
+			mmd_g_string_append_printf(out,"%s",n->str);
 			break;
 	}
 }
 
-void print_critic_html_highlight_node(GString *out, node *n, scratch_pad *scratch) {
+void print_critic_html_highlight_node(MMD_GString *out, node *n, scratch_pad *scratch) {
 	if (n == NULL)
 		return;
 	
@@ -92,20 +92,20 @@ void print_critic_html_highlight_node(GString *out, node *n, scratch_pad *scratc
 			print_critic_html_highlight_node_tree(out, n->children, scratch);
 			break;
 		case CRITICADDITION:
-			g_string_append_printf(out,"<ins>%s</ins>",n->str);
+			mmd_g_string_append_printf(out,"<ins>%s</ins>",n->str);
 			break;
 		case CRITICCOMMENT:
 			/* Hide comments for now */
 			/* g_string_append_printf(out, "<span class=\"critic comment\">%s</span>", n->str); */
 			break;
 		case CRITICHIGHLIGHT:
-			g_string_append_printf(out,"<mark>%s</mark>",n->str);
+			mmd_g_string_append_printf(out,"<mark>%s</mark>",n->str);
 			break;
 		case CRITICDELETION:
-			g_string_append_printf(out,"<del>%s</del>",n->str);
+			mmd_g_string_append_printf(out,"<del>%s</del>",n->str);
 			break;
 		default:
-			g_string_append_printf(out,"%s",n->str);
+			mmd_g_string_append_printf(out,"%s",n->str);
 			break;
 	}
 }

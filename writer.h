@@ -21,7 +21,7 @@ void find_abbreviations(node *list, scratch_pad *scratch);
 
 link_data * extract_link_data(char *label, scratch_pad *scratch);
 
-void pad(GString *out, int num, scratch_pad *scratch);
+void pad(MMD_GString *out, int num, scratch_pad *scratch);
 
 int note_number_for_label(char *text, scratch_pad *scratch);
 int note_number_for_node(node *ref, scratch_pad *scratch);

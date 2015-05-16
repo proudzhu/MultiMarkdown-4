@@ -76,12 +76,12 @@ int main(int argc, char **argv)
 		{NULL, 0, NULL, 0}
 	};
 	
-	GString *inputbuf;
-	GString *manifest;
+	MMD_GString *inputbuf;
+	MMD_GString *manifest;
 	FILE *input;
 	FILE *output;
 	int curchar;
-	GString *filename = NULL;
+	MMD_GString *filename = NULL;
 	
 	char *out;
 	
@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 			
 			case 'o':	/* output filename */
 				if (optarg)
-					filename = g_string_new(optarg);
+					filename = mmd_g_string_new(optarg);
 				break;
 			
 			case 'v':	/* show version */
@@ -287,21 +287,21 @@ int main(int argc, char **argv)
 		/* we have multiple file names -- handle individually */
 		
 		for (i = 0; i < numargs; i++) {
-			inputbuf = g_string_new("");
-			manifest = g_string_new("");
+			inputbuf = mmd_g_string_new("");
+			manifest = mmd_g_string_new("");
 			char *temp = NULL;
 			char *folder = NULL;
 
 			/* Read file */
 			if ((input = fopen(argv[i+1], "r")) == NULL ) {
 				perror(argv[i+1]);
-				g_string_free(inputbuf, true);
-				g_string_free(filename, true);
+				mmd_g_string_free(inputbuf, true);
+				mmd_g_string_free(filename, true);
 				exit(EXIT_FAILURE);
 			}
 			
 			while ((curchar = fgetc(input)) != EOF)
-				g_string_append_c(inputbuf, curchar);
+				mmd_g_string_append_c(inputbuf, curchar);
 			fclose(input);
 			
 			/* list metadata keys */
@@ -310,7 +310,7 @@ int main(int argc, char **argv)
 				if (out != NULL) {
 					fprintf(stdout, "%s", out);
 					free(out);
-					g_string_free(inputbuf, true);
+					mmd_g_string_free(inputbuf, true);
 					free(target_meta_key);
 					return(EXIT_SUCCESS);
 				}
@@ -322,7 +322,7 @@ int main(int argc, char **argv)
 				if (out != NULL)
 					fprintf(stdout, "%s\n", out);
 				free(out);
-				g_string_free(inputbuf, true);
+				mmd_g_string_free(inputbuf, true);
 				free(target_meta_key);
 				return(EXIT_SUCCESS);
 			}
@@ -340,20 +340,20 @@ int main(int argc, char **argv)
 			/* list transclude manifest */
 			if (list_transclude_manifest) {
 				fprintf(stdout, "%s\n", manifest->str);
-				g_string_free(inputbuf, true);
-				g_string_free(manifest, true);
+				mmd_g_string_free(inputbuf, true);
+				mmd_g_string_free(manifest, true);
 				return(EXIT_SUCCESS);
 			} else {
-				g_string_free(manifest, true);
+				mmd_g_string_free(manifest, true);
 			}
 
 			if (output_format == ORIGINAL_FORMAT) {
 				/* We want the source, don't parse */
 				out = (inputbuf->str);
-				g_string_free(inputbuf, FALSE);
+				mmd_g_string_free(inputbuf, FALSE);
 			} else {
 				out = markdown_to_string(inputbuf->str,  extensions, output_format);
-				g_string_free(inputbuf, true);
+				mmd_g_string_free(inputbuf, true);
 			}
 			
 			/* set up for output */
@@ -366,31 +366,31 @@ int main(int argc, char **argv)
 				}
 			}
 			
-			filename = g_string_new(temp);
+			filename = mmd_g_string_new(temp);
 			
 			if (output_format == TEXT_FORMAT) {
-				g_string_append(filename,".txt");
+				mmd_g_string_append(filename,".txt");
 			} else if (output_format == HTML_FORMAT) {
-				g_string_append(filename,".html");
+				mmd_g_string_append(filename,".html");
 			} else if (output_format == LATEX_FORMAT) {
-				g_string_append(filename,".tex");
+				mmd_g_string_append(filename,".tex");
 			} else if (output_format == BEAMER_FORMAT) {
-				g_string_append(filename,".tex");
+				mmd_g_string_append(filename,".tex");
 			} else if (output_format == MEMOIR_FORMAT) {
-				g_string_append(filename,".tex");
+				mmd_g_string_append(filename,".tex");
 			} else if (output_format == ODF_FORMAT) {
-				g_string_append(filename,".fodt");
+				mmd_g_string_append(filename,".fodt");
 			} else if (output_format == OPML_FORMAT) {
-				g_string_append(filename,".opml");
+				mmd_g_string_append(filename,".opml");
 			} else if (output_format == LYX_FORMAT) {
-				g_string_append(filename,".lyx");
+				mmd_g_string_append(filename,".lyx");
 			} else if (output_format == RTF_FORMAT) {
-				g_string_append(filename,".rtf");
+				mmd_g_string_append(filename,".rtf");
 			} else if (output_format == ORIGINAL_FORMAT) {
-				g_string_append(filename,".mmd_out");
+				mmd_g_string_append(filename,".mmd_out");
 			} else {
 				/* default extension -- in this case we only have 1 */
-				g_string_append(filename,".txt");
+				mmd_g_string_append(filename,".txt");
 			}
 			
 			if (!(output = fopen(filename->str, "w"))) {
@@ -400,24 +400,24 @@ int main(int argc, char **argv)
 				fclose(output);
 			}
 			
-			g_string_free(filename,true);
+			mmd_g_string_free(filename,true);
 			
 			if (out != NULL)
 				free(out);
 		}
 	} else {
 		/* get input from stdin or concat all files */
-		inputbuf = g_string_new("");
+		inputbuf = mmd_g_string_new("");
 		char *folder = NULL;
 		char *temp = NULL;
-		GString *manifest = g_string_new("");
+		MMD_GString *manifest = mmd_g_string_new("");
 
 		folder = getcwd(0,0);
 
 		if (numargs == 0) {
 			/* get stdin */
 			while ((curchar = fgetc(stdin)) != EOF)
-				g_string_append_c(inputbuf, curchar);
+				mmd_g_string_append_c(inputbuf, curchar);
 			fclose(stdin);
 		} else {
 			/* get files */
@@ -428,15 +428,15 @@ int main(int argc, char **argv)
 			for (i = 0; i < numargs; i++) {
 				if ((input = fopen(argv[i+1], "r")) == NULL ) {
 					perror(argv[i+1]);
-					g_string_free(inputbuf, true);
-					g_string_free(filename, true);
+					mmd_g_string_free(inputbuf, true);
+					mmd_g_string_free(filename, true);
 					// free(folder);
 					free(temp);
 					exit(EXIT_FAILURE);
 				}
 				
 				while ((curchar = fgetc(input)) != EOF)
-					g_string_append_c(inputbuf, curchar);
+					mmd_g_string_append_c(inputbuf, curchar);
 				fclose(input);
 			}
 		}
@@ -458,7 +458,7 @@ int main(int argc, char **argv)
 			if (out != NULL) {
 				fprintf(stdout, "%s", out);
 				free(out);
-				g_string_free(inputbuf, true);
+				mmd_g_string_free(inputbuf, true);
 				free(target_meta_key);
 				return(EXIT_SUCCESS);
 			}
@@ -470,7 +470,7 @@ int main(int argc, char **argv)
 			if (out != NULL)
 				fprintf(stdout, "%s\n", out);
 			free(out);
-			g_string_free(inputbuf, true);
+			mmd_g_string_free(inputbuf, true);
 			free(target_meta_key);
 			return(EXIT_SUCCESS);
 		}
@@ -478,20 +478,20 @@ int main(int argc, char **argv)
 		/* list transclude manifest */
 		if (list_transclude_manifest) {
 			fprintf(stdout, "%s\n", manifest->str);
-			g_string_free(inputbuf, true);
-			g_string_free(manifest, true);
+			mmd_g_string_free(inputbuf, true);
+			mmd_g_string_free(manifest, true);
 			return(EXIT_SUCCESS);
 		} else {
-			g_string_free(manifest, true);			
+			mmd_g_string_free(manifest, true);			
 		}
 
 		if (output_format == ORIGINAL_FORMAT) {
 			/* We want the source, don't parse */
 			out = (inputbuf->str);
-			g_string_free(inputbuf, FALSE);
+			mmd_g_string_free(inputbuf, FALSE);
 		} else {
 			out = markdown_to_string(inputbuf->str,  extensions, output_format);
-			g_string_free(inputbuf, true);
+			mmd_g_string_free(inputbuf, true);
 		}
 		
 		/* did we specify an output filename; "-" equals stdout */
@@ -501,14 +501,14 @@ int main(int argc, char **argv)
 			perror(filename->str);
 			if (out != NULL)
 				free(out);
-			g_string_free(filename, true);
+			mmd_g_string_free(filename, true);
 			return 1;
 		}
 		
 		fprintf(output, "%s\n",out);
 		fclose(output);
 		
-		g_string_free(filename, true);
+		mmd_g_string_free(filename, true);
 		
 		if (out != NULL)
 			free(out);

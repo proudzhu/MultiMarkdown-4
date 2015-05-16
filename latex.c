@@ -5,13 +5,13 @@
 	(c) 2013-2015 Fletcher T. Penney (http://fletcherpenney.net/).
 
 	Derived from peg-multimarkdown, which was forked from peg-markdown,
-	which is (c) 2008 John MacFarlane (jgm at berkeley dot edu), and 
+	which is (c) 2008 John MacFarlane (jgm at berkeley dot edu), and
 	licensed under GNU GPL or MIT.
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License or the MIT
 	license.  See LICENSE for details.
-	
+
 	This program is distributed in the hope that it will be useful,
 	but WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -28,10 +28,10 @@ int find_latex_mode(int format, node *n) {
 	node *latex_mode;
 	char *key;
 	char *label;
-	
+
 	if (format != LATEX_FORMAT)
 		return format;
-	
+
 	if (tree_contains_key(n, METAKEY)) {
 		latex_mode = metadata_for_key("latexmode",n);
 		if (latex_mode != NULL) {
@@ -46,13 +46,13 @@ int find_latex_mode(int format, node *n) {
 			free(key);
 		}
 	}
-	
+
 	return format;
 }
 
 
 /* print_latex_node_tree -- convert node tree to LaTeX */
-void print_latex_node_tree(GString *out, node *list, scratch_pad *scratch) {
+void print_latex_node_tree(MMD_GString *out, node *list, scratch_pad *scratch) {
 	while (list != NULL) {
 		print_latex_node(out, list, scratch);
 		list = list->next;
@@ -60,29 +60,29 @@ void print_latex_node_tree(GString *out, node *list, scratch_pad *scratch) {
 }
 
 /* print_latex_node -- convert given node to LaTeX and append */
-void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
+void print_latex_node(MMD_GString *out, node *n, scratch_pad *scratch) {
 	node *temp_node;
 	char *temp;
 	int lev;
 	char *width = NULL;
 	char *height = NULL;
-	GString *temp_str;
-	GString *raw_str;
+	MMD_GString *temp_str;
+	MMD_GString *raw_str;
 	int i;
 	double temp_float;
 
 	if (n == NULL)
 		return;
-	
+
 	/* debugging statement */
 #ifdef DEBUG_ON
 	fprintf(stderr, "print_latex_node: %d\n",n->key);
 #endif
-	
+
 	/* If we are forcing a complete document, and METADATA isn't the first thing,
 		we need to close <head> */
 	if ((scratch->extensions & EXT_COMPLETE)
-		&& !(scratch->extensions & EXT_HEAD_CLOSED) && 
+		&& !(scratch->extensions & EXT_HEAD_CLOSED) &&
 		!((n->key == FOOTER) || (n->key == METADATA))) {
 			pad(out, 2, scratch);
 			scratch->extensions = scratch->extensions | EXT_HEAD_CLOSED;
@@ -101,12 +101,12 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 				in a conflict otherwise.  This at least makes it less likely. */
 			width = ascii_label_from_node(n->children);
 			temp = ascii_label_from_string(n->str);
-			g_string_append_printf(out, "\\newacro{%s%s}[",width,temp);
+			mmd_g_string_append_printf(out, "\\newacro{%s%s}[",width,temp);
 			print_latex_node_tree(out, n->children, scratch);
-			g_string_append_printf(out, "]{");
+			mmd_g_string_append_printf(out, "]{");
 			trim_trailing_whitespace(n->str);
 			print_latex_string(out, n->str, scratch);
-			g_string_append_printf(out, "}\n");
+			mmd_g_string_append_printf(out, "}\n");
 			free(temp);
 			free(width);
 			break;
@@ -126,14 +126,14 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			/* In either case, now we call on the abbreviation */
 			width = ascii_label_from_node(n->children->children);
 			temp = ascii_label_from_string(n->children->str);
-			g_string_append_printf(out, "\\ac{%s%s}", width, temp);
+			mmd_g_string_append_printf(out, "\\ac{%s%s}", width, temp);
 			free(temp);
 			free(width);
 			break;
 		case ABBRSTOP:
-			break;		
+			break;
 		case SPACE:
-			g_string_append_printf(out,"%s",n->str);
+			mmd_g_string_append_printf(out,"%s",n->str);
 			break;
 		case PLAIN:
 			pad(out,1, scratch);
@@ -147,7 +147,7 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			break;
 		case HRULE:
 			pad(out, 2, scratch);
-			g_string_append_printf(out, "\\begin{center}\\rule{3in}{0.4pt}\\end{center}\n");
+			mmd_g_string_append_printf(out, "\\begin{center}\\rule{3in}{0.4pt}\\end{center}\n");
 			scratch->padded = 0;
 			break;
 		case HTMLBLOCK:
@@ -157,7 +157,7 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 				pad(out, 2, scratch);
 				/* trim "-->" from end */
 				n->str[strlen(n->str)-3] = '\0';
-				g_string_append_printf(out, "%s", &n->str[4]);
+				mmd_g_string_append_printf(out, "%s", &n->str[4]);
 				scratch->padded = 0;
 			}
 			break;
@@ -167,38 +167,38 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			if ((n->children != NULL) && (n->children->key == VERBATIMTYPE)) {
 				trim_trailing_whitespace(n->children->str);
 				if (strlen(n->children->str) > 0) {
-					g_string_append_printf(out, "\\begin{lstlisting}[language=%s]\n%s\\end{lstlisting}", n->children->str,n->str);
+					mmd_g_string_append_printf(out, "\\begin{lstlisting}[language=%s]\n%s\\end{lstlisting}", n->children->str,n->str);
 					scratch->padded = 0;
 					break;
 				}
 			}
-			g_string_append_printf(out, "\\begin{verbatim}\n%s\\end{verbatim}",n->str);
+			mmd_g_string_append_printf(out, "\\begin{verbatim}\n%s\\end{verbatim}",n->str);
 			scratch->padded = 0;
 			break;
 		case BULLETLIST:
 			pad(out, 2, scratch);
-			g_string_append_printf(out, "\\begin{itemize}");
+			mmd_g_string_append_printf(out, "\\begin{itemize}");
 			scratch->padded = 0;
 			print_latex_node_tree(out, n->children, scratch);
 			pad(out, 1, scratch);
-			g_string_append_printf(out, "\\end{itemize}");
+			mmd_g_string_append_printf(out, "\\end{itemize}");
 			scratch->padded = 0;
 			break;
 		case ORDEREDLIST:
 			pad(out, 2, scratch);
-			g_string_append_printf(out, "\\begin{enumerate}");
+			mmd_g_string_append_printf(out, "\\begin{enumerate}");
 			scratch->padded = 0;
 			print_latex_node_tree(out, n->children, scratch);
 			pad(out, 1, scratch);
-			g_string_append_printf(out, "\\end{enumerate}");
+			mmd_g_string_append_printf(out, "\\end{enumerate}");
 			scratch->padded = 0;
 			break;
 		case LISTITEM:
 			pad(out, 1, scratch);
-			g_string_append_printf(out, "\\item ");
+			mmd_g_string_append_printf(out, "\\item ");
 			scratch->padded = 2;
 			print_latex_node_tree(out, n->children, scratch);
-			g_string_append_printf(out, "\n");
+			mmd_g_string_append_printf(out, "\n");
 			scratch->padded = 0;
 			break;
 		case METADATA:
@@ -215,7 +215,7 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			temp = n->str;
 			n->str = label_from_string(temp);
 			free(temp);
-			
+
 			if (strcmp(n->str, "baseheaderlevel") == 0) {
 				scratch->baseheaderlevel = atoi(n->children->str);
 				break;
@@ -224,39 +224,39 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 				break;
 			} else if (strcmp(n->str, "quoteslanguage") == 0) {
 				temp = label_from_node_tree(n->children);
-				if ((strcmp(temp, "nl") == 0) || (strcmp(temp, "dutch") == 0)) { scratch->language = DUTCH; }   else 
-				if ((strcmp(temp, "de") == 0) || (strcmp(temp, "german") == 0)) { scratch->language = GERMAN; } else 
-				if (strcmp(temp, "germanguillemets") == 0) { scratch->language = GERMANGUILL; } else 
-				if ((strcmp(temp, "fr") == 0) || (strcmp(temp, "french") == 0)) { scratch->language = FRENCH; } else 
+				if ((strcmp(temp, "nl") == 0) || (strcmp(temp, "dutch") == 0)) { scratch->language = DUTCH; }   else
+				if ((strcmp(temp, "de") == 0) || (strcmp(temp, "german") == 0)) { scratch->language = GERMAN; } else
+				if (strcmp(temp, "germanguillemets") == 0) { scratch->language = GERMANGUILL; } else
+				if ((strcmp(temp, "fr") == 0) || (strcmp(temp, "french") == 0)) { scratch->language = FRENCH; } else
 				if ((strcmp(temp, "sv") == 0) || (strcmp(temp, "swedish") == 0)) { scratch->language = SWEDISH; }
 				break;
 			}
-			
+
 			/* Don't handle remaining metadata if we're snippet only */
-			
+
 			if (scratch->extensions & EXT_SNIPPET)
 				break;
-							
+
 			if (strcmp(n->str, "title") == 0) {
-				g_string_append_printf(out, "\\def\\mytitle{");
+				mmd_g_string_append_printf(out, "\\def\\mytitle{");
 				print_latex_node(out, n->children, scratch);
-				g_string_append_printf(out, "}\n");
+				mmd_g_string_append_printf(out, "}\n");
 			} else if (strcmp(n->str, "latextitle") == 0) {
-				g_string_append_printf(out, "\\def\\mytitle{%s}\n",n->children->str);
+				mmd_g_string_append_printf(out, "\\def\\mytitle{%s}\n",n->children->str);
 			} else if (strcmp(n->str, "author") == 0) {
-				g_string_append_printf(out, "\\def\\myauthor{");
+				mmd_g_string_append_printf(out, "\\def\\myauthor{");
 				print_latex_node(out, n->children, scratch);
-				g_string_append_printf(out, "}\n");
+				mmd_g_string_append_printf(out, "}\n");
 			} else if (strcmp(n->str, "latexauthor") == 0) {
-				g_string_append_printf(out, "\\def\\myauthor{%s}\n",n->children->str);
+				mmd_g_string_append_printf(out, "\\def\\myauthor{%s}\n",n->children->str);
 			} else if (strcmp(n->str, "date") == 0) {
-				g_string_append_printf(out, "\\def\\mydate{");
+				mmd_g_string_append_printf(out, "\\def\\mydate{");
 				print_latex_node(out, n->children, scratch);
-				g_string_append_printf(out, "}\n");
+				mmd_g_string_append_printf(out, "}\n");
 			} else if (strcmp(n->str, "copyright") == 0) {
-				g_string_append_printf(out, "\\def\\mycopyright{");
+				mmd_g_string_append_printf(out, "\\def\\mycopyright{");
 				print_latex_node(out, n->children, scratch);
-				g_string_append_printf(out, "}\n");
+				mmd_g_string_append_printf(out, "}\n");
 			} else if (strcmp(n->str, "css") == 0) {
 			} else if (strcmp(n->str, "xhtmlheader") == 0) {
 			} else if (strcmp(n->str, "htmlheader") == 0) {
@@ -265,19 +265,19 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			} else if (strcmp(n->str, "lang") == 0) {
 			} else if (strcmp(n->str, "latexinput") == 0) {
 				trim_trailing_whitespace(n->children->str);
-				g_string_append_printf(out, "\\input{%s}\n", n->children->str);
+				mmd_g_string_append_printf(out, "\\input{%s}\n", n->children->str);
 			} else if (strcmp(n->str, "latexfooter") == 0) {
 				trim_trailing_whitespace(n->children->str);
 				scratch->latex_footer = strdup(n->children->str);
 			} else if (strcmp(n->str, "bibtex") == 0) {
 				trim_trailing_whitespace(n->children->str);
-				g_string_append_printf(out, "\\def\\bibliocommand{\\bibliography{%s}}\n",n->children->str);
+				mmd_g_string_append_printf(out, "\\def\\bibliocommand{\\bibliography{%s}}\n",n->children->str);
 			} else {
-				g_string_append_printf(out, "\\def\\");
+				mmd_g_string_append_printf(out, "\\def\\");
 				print_latex_string(out, n->str, scratch);
-				g_string_append_printf(out, "{");
+				mmd_g_string_append_printf(out, "{");
 				print_latex_node_tree(out, n->children, scratch);
-				g_string_append_printf(out, "}\n");
+				mmd_g_string_append_printf(out, "}\n");
 			}
 			break;
 		case METAVALUE:
@@ -288,10 +288,10 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			print_latex_endnotes(out, scratch);
 			if (scratch->latex_footer != NULL) {
 				pad(out, 2, scratch);
-				g_string_append_printf(out,"\\input{%s}\n", scratch->latex_footer);
+				mmd_g_string_append_printf(out,"\\input{%s}\n", scratch->latex_footer);
 			}
 			if (scratch->extensions & EXT_COMPLETE) {
-				g_string_append_printf(out, "\n\\end{document}");
+				mmd_g_string_append_printf(out, "\n\\end{document}");
 			}
 			break;
 		case HEADINGSECTION:
@@ -304,25 +304,25 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			pad(out, 2, scratch);
 			switch (lev) {
 				case 1:
-					g_string_append_printf(out, "\\part{");
+					mmd_g_string_append_printf(out, "\\part{");
 					break;
 				case 2:
-					g_string_append_printf(out, "\\chapter{");
+					mmd_g_string_append_printf(out, "\\chapter{");
 					break;
 				case 3:
-					g_string_append_printf(out, "\\section{");
+					mmd_g_string_append_printf(out, "\\section{");
 					break;
 				case 4:
-					g_string_append_printf(out, "\\subsection{");
+					mmd_g_string_append_printf(out, "\\subsection{");
 					break;
 				case 5:
-					g_string_append_printf(out, "\\subsubsection{");
+					mmd_g_string_append_printf(out, "\\subsubsection{");
 					break;
 				case 6:
-					g_string_append_printf(out, "\\paragraph{");
+					mmd_g_string_append_printf(out, "\\paragraph{");
 					break;
 				case 7:
-					g_string_append_printf(out, "\\subparagraph{");
+					mmd_g_string_append_printf(out, "\\subparagraph{");
 					break;
 			}
 			/* Don't allow footnotes */
@@ -331,13 +331,13 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 				/* use label for header since one was specified (MMD)*/
 				temp = label_from_string(n->children->str);
 				print_latex_node_tree(out, n->children->next, scratch);
-				g_string_append_printf(out, "}\n\\label{%s}",temp);
+				mmd_g_string_append_printf(out, "}\n\\label{%s}",temp);
 				free(temp);
 			} else {
 				/* generate a label by default for MMD */
 				temp = label_from_node_tree(n->children);
 				print_latex_node_tree(out, n->children, scratch);
-				g_string_append_printf(out, "}\n\\label{%s}",temp);
+				mmd_g_string_append_printf(out, "}\n\\label{%s}",temp);
 				free(temp);
 			}
 			scratch->no_latex_footnote = FALSE;
@@ -366,7 +366,7 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			print_latex_localized_typography(out, RDQUOTE, scratch);
 			break;
 		case LINEBREAK:
-			g_string_append_printf(out, "\\\\\n");
+			mmd_g_string_append_printf(out, "\\\\\n");
 			break;
 		case MATHSPAN:
 			temp = strdup(n->str);
@@ -374,42 +374,42 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 				if (temp[1] == '$') {
 					if (strncmp(&temp[2],"\\begin",5) == 0) {
 						temp[strlen(temp)-2] = '\0';
-						g_string_append_printf(out, "%s",&temp[1]);
+						mmd_g_string_append_printf(out, "%s",&temp[1]);
 					} else {
-						g_string_append_printf(out, "%s",temp);
+						mmd_g_string_append_printf(out, "%s",temp);
 					}
 				} else {
 					if (strncmp(&temp[1],"\\begin",5) == 0) {
 						temp[strlen(temp)-1] = '\0';
-						g_string_append_printf(out, "%s",&temp[1]);
+						mmd_g_string_append_printf(out, "%s",&temp[1]);
 					} else {
-						g_string_append_printf(out, "%s",temp);
+						mmd_g_string_append_printf(out, "%s",temp);
 					}
 				}
 			} else if (strncmp(&temp[2],"\\begin",5) == 0) {
 				/* trim */
 				temp[strlen(temp)-3] = '\0';
-				g_string_append_printf(out, "%s", &temp[2]);
+				mmd_g_string_append_printf(out, "%s", &temp[2]);
 			} else {
 				if (temp[strlen(temp)-1] == ']') {
 					temp[strlen(temp)-3] = '\0';
-					g_string_append_printf(out, "%s\\]", temp);
+					mmd_g_string_append_printf(out, "%s\\]", temp);
 				} else {
 					temp[strlen(temp)-3] = '\0';
-					g_string_append_printf(out, "$%s$", &temp[2]);
+					mmd_g_string_append_printf(out, "$%s$", &temp[2]);
 				}
 			}
 			free(temp);
 			break;
 		case STRONG:
-			g_string_append_printf(out, "\\textbf{");
+			mmd_g_string_append_printf(out, "\\textbf{");
 			print_latex_node_tree(out,n->children,scratch);
-			g_string_append_printf(out, "}");
+			mmd_g_string_append_printf(out, "}");
 			break;
 		case EMPH:
-			g_string_append_printf(out, "\\emph{");
+			mmd_g_string_append_printf(out, "\\emph{");
 			print_latex_node_tree(out,n->children,scratch);
-			g_string_append_printf(out, "}");
+			mmd_g_string_append_printf(out, "}");
 			break;
 		case LINKREFERENCE:
 			break;
@@ -432,11 +432,11 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 #endif
 				/* we seem to be a [foo][] style link */
 				/* so load a label */
-				temp_str = g_string_new("");
+				temp_str = mmd_g_string_new("");
 				print_raw_node_tree(temp_str, n->children);
 				free(n->link_data->label);
 				n->link_data->label = temp_str->str;
-				g_string_free(temp_str, FALSE);
+				mmd_g_string_free(temp_str, FALSE);
 			}
 #ifdef DEBUG_ON
 	fprintf(stderr, "look for reference data for latex link: '%s'\n",n->str);
@@ -451,75 +451,75 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 				n->link_data = extract_link_data(temp, scratch);
 				if (n->link_data == NULL) {
 					/* replace original text since no definition found */
-					g_string_append_printf(out, "[");
+					mmd_g_string_append_printf(out, "[");
 					print_latex_node(out, n->children, scratch);
-					g_string_append_printf(out,"]");
+					mmd_g_string_append_printf(out,"]");
 					if (n->children->next != NULL) {
-						g_string_append_printf(out, "[");
+						mmd_g_string_append_printf(out, "[");
 						print_latex_node_tree(out, n->children->next, scratch);
-						g_string_append_printf(out,"]");
+						mmd_g_string_append_printf(out,"]");
 					} else if (n->str != NULL) {
 						/* no title label, so see if we stashed str*/
-						g_string_append_printf(out, "%s", n->str);
+						mmd_g_string_append_printf(out, "%s", n->str);
 					} else {
-						g_string_append_printf(out, "[%s]",temp);
+						mmd_g_string_append_printf(out, "[%s]",temp);
 					}
 					free(temp);
 					break;
 				}
 				free(temp);
 			}
-			temp_str = g_string_new("");
+			temp_str = mmd_g_string_new("");
 			print_latex_node_tree(temp_str, n->children, scratch);
-			raw_str = g_string_new("");
+			raw_str = mmd_g_string_new("");
 			print_raw_node_tree(raw_str, n->children);
-			
+
 			if ((n->link_data->source != NULL) && (n->link_data->source[0] == '#' )) {
 				/* link to anchor within the document */
 				if (strlen(temp_str->str) > 0) {
 					/* We have text before the link */
-					g_string_append_printf(out, "%s (", temp_str->str);
+					mmd_g_string_append_printf(out, "%s (", temp_str->str);
 				}
-				
+
 				if (n->link_data->label == NULL) {
 					if ((n->link_data->source !=  NULL) && (strncmp(n->link_data->source,"#",1) == 0)) {
 						/* This link was specified as [](#bar) */
-						g_string_append_printf(out, "\\autoref{%s}", n->link_data->source + 1);
+						mmd_g_string_append_printf(out, "\\autoref{%s}", n->link_data->source + 1);
 					} else {
-						g_string_append_printf(out, "\\href{%s}{}", n->link_data->source);
+						mmd_g_string_append_printf(out, "\\href{%s}{}", n->link_data->source);
 					}
 				} else {
-					g_string_append_printf(out, "\\autoref{%s}", n->link_data->label);
+					mmd_g_string_append_printf(out, "\\autoref{%s}", n->link_data->label);
 				}
 				if (strlen(temp_str->str) > 0) {
-					g_string_append_printf(out, ")", temp_str->str);
+					mmd_g_string_append_printf(out, ")", temp_str->str);
 				}
 			} else if (strcmp(raw_str->str, n->link_data->source) == 0){
 				/* This is a <link> */
-				g_string_append_printf(out, "\\href{%s}{%s}", n->link_data->source, temp_str->str);
+				mmd_g_string_append_printf(out, "\\href{%s}{%s}", n->link_data->source, temp_str->str);
 			} else if ((strlen(n->link_data->source) > 7) &&
 				(strcmp(raw_str->str,&n->link_data->source[7]) == 0)) {
 				/*This is a <mailto> */
-				g_string_append_printf(out, "\\href{%s}{%s}", n->link_data->source, temp_str->str);
+				mmd_g_string_append_printf(out, "\\href{%s}{%s}", n->link_data->source, temp_str->str);
 			} else {
 				/* this is a [text](link) */
-				g_string_append_printf(out, "\\href{%s}{", n->link_data->source);
+				mmd_g_string_append_printf(out, "\\href{%s}{", n->link_data->source);
 				print_latex_node_tree(out, n->children, scratch);
-				g_string_append_printf(out, "}");
+				mmd_g_string_append_printf(out, "}");
 				if (scratch->no_latex_footnote == FALSE) {
-					g_string_append_printf(out, "\\footnote{\\href{");
+					mmd_g_string_append_printf(out, "\\footnote{\\href{");
 					print_latex_url(out, n->link_data->source, scratch);
-					g_string_append_printf(out, "}{", n->link_data->source);
+					mmd_g_string_append_printf(out, "}{", n->link_data->source);
 					print_latex_string(out, n->link_data->source, scratch);
-					g_string_append_printf(out, "}}");
+					mmd_g_string_append_printf(out, "}}");
 				}
 			}
-			g_string_free(temp_str, true);
-			g_string_free(raw_str, true);
+			mmd_g_string_free(temp_str, true);
+			mmd_g_string_free(raw_str, true);
 			n->link_data->attr = NULL;
 			break;
 		case ATTRKEY:
-			g_string_append_printf(out, " %s=\"%s\"", n->str,
+			mmd_g_string_append_printf(out, " %s=\"%s\"", n->str,
 				n->children->str);
 			break;
 		case REFNAME:
@@ -537,10 +537,10 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			(n->link_data->source == NULL)) {
 				/* we seem to be a [foo][] style link */
 				/* so load a label */
-				temp_str = g_string_new("");
+				temp_str = mmd_g_string_new("");
 				print_raw_node_tree(temp_str, n->children);
 				n->link_data->label = temp_str->str;
-				g_string_free(temp_str, FALSE);
+				mmd_g_string_free(temp_str, FALSE);
 			}
 			/* Load reference data */
 			if (n->link_data->label != NULL) {
@@ -549,29 +549,29 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 				n->link_data = extract_link_data(temp, scratch);
 				if (n->link_data == NULL) {
 					/* replace original text since no definition found */
-					g_string_append_printf(out, "![");
+					mmd_g_string_append_printf(out, "![");
 					print_latex_node(out, n->children, scratch);
-					g_string_append_printf(out,"]");
+					mmd_g_string_append_printf(out,"]");
 					if (n->children->next != NULL) {
-						g_string_append_printf(out, "[");
+						mmd_g_string_append_printf(out, "[");
 						print_latex_node_tree(out, n->children->next, scratch);
-						g_string_append_printf(out,"]");
+						mmd_g_string_append_printf(out,"]");
 					} else if (n->str != NULL) {
 						/* no title label, so see if we stashed str*/
-						g_string_append_printf(out, "%s", n->str);
+						mmd_g_string_append_printf(out, "%s", n->str);
 					} else {
-						g_string_append_printf(out, "[%s]",temp);
+						mmd_g_string_append_printf(out, "[%s]",temp);
 					}
 					free(temp);
 					break;
 				}
 				free(temp);
 			}
-			
-			if (n->key == IMAGEBLOCK)
-				g_string_append_printf(out, "\\begin{figure}[htbp]\n\\centering\n");
 
-			g_string_append_printf(out, "\\includegraphics[");
+			if (n->key == IMAGEBLOCK)
+				mmd_g_string_append_printf(out, "\\begin{figure}[htbp]\n\\centering\n");
+
+			mmd_g_string_append_printf(out, "\\includegraphics[");
 
 #ifdef DEBUG_ON
 	fprintf(stderr, "attributes\n");
@@ -585,67 +585,67 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 				if (temp_node != NULL)
 					width = correct_dimension_units(temp_node->children->str);
 			}
-			
+
 			if ((height == NULL) && (width == NULL)) {
 				/* No dimensions used */
-				g_string_append_printf(out, "keepaspectratio,width=\\textwidth,height=0.75\\textheight");
+				mmd_g_string_append_printf(out, "keepaspectratio,width=\\textwidth,height=0.75\\textheight");
 			} else {
 				/* At least one dimension given */
 				if (!((height != NULL) && (width != NULL))) {
 					/* we only have one */
-					g_string_append_printf(out, "keepaspectratio,");
+					mmd_g_string_append_printf(out, "keepaspectratio,");
 				}
-				
+
 				if (width != NULL) {
 					if (width[strlen(width)-1] == '%') {
 						width[strlen(width)-1] = '\0';
 						temp_float = strtod(width, NULL);
 						temp_float = temp_float/100;
-						g_string_append_printf(out, "width=%.4f\\textwidth,", temp_float);
+						mmd_g_string_append_printf(out, "width=%.4f\\textwidth,", temp_float);
 					} else {
-						g_string_append_printf(out, "width=%s,",width);
+						mmd_g_string_append_printf(out, "width=%s,",width);
 					}
 				} else {
-					g_string_append_printf(out, "width=\\textwidth,");
+					mmd_g_string_append_printf(out, "width=\\textwidth,");
 				}
-				
+
 				if (height != NULL) {
 					if (height[strlen(height)-1] == '%') {
 						height[strlen(height)-1] = '\0';
 						temp_float = strtod(height, NULL);
 						temp_float = temp_float/100;
-						g_string_append_printf(out, "height=%.4f\\textheight", temp_float);
+						mmd_g_string_append_printf(out, "height=%.4f\\textheight", temp_float);
 					} else {
-						g_string_append_printf(out, "height=%s",height);
+						mmd_g_string_append_printf(out, "height=%s",height);
 					}
 				} else {
-					g_string_append_printf(out, "height=0.75\\textheight");
+					mmd_g_string_append_printf(out, "height=0.75\\textheight");
 				}
 			}
 
-			g_string_append_printf(out, "]{%s}",n->link_data->source);
-			
+			mmd_g_string_append_printf(out, "]{%s}",n->link_data->source);
+
 			if (n->key == IMAGEBLOCK) {
 				if (n->children != NULL) {
-					temp_str = g_string_new("");
+					temp_str = mmd_g_string_new("");
 					print_latex_node_tree(temp_str,n->children,scratch);
 					if (temp_str->currentStringLength > 0) {
-						g_string_append_printf(out, "\n\\caption{");
-						g_string_append(out, temp_str->str);
-						g_string_append_printf(out, "}");
+						mmd_g_string_append_printf(out, "\n\\caption{");
+						mmd_g_string_append(out, temp_str->str);
+						mmd_g_string_append_printf(out, "}");
 					}
-					g_string_free(temp_str, true);
+					mmd_g_string_free(temp_str, true);
 				}
-				
+
 				if (n->link_data->label != NULL) {
 					temp = label_from_string(n->link_data->label);
-					g_string_append_printf(out, "\n\\label{%s}",temp);
+					mmd_g_string_append_printf(out, "\n\\label{%s}",temp);
 					free(temp);
 				}
-				g_string_append_printf(out, "\n\\end{figure}");
+				mmd_g_string_append_printf(out, "\n\\end{figure}");
 				scratch->padded = 0;
 			}
-			
+
 			free(height);
 			free(width);
 			n->link_data->attr = NULL;	/* We'll delete these elsewhere */
@@ -658,13 +658,13 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			temp_node = node_for_count(scratch->used_notes, lev);
 			scratch->padded = 2;
 			if (temp_node->key == GLOSSARYSOURCE) {
-				g_string_append_printf(out, "\\newglossaryentry{%s}{",temp_node->children->children->str);
+				mmd_g_string_append_printf(out, "\\newglossaryentry{%s}{",temp_node->children->children->str);
 				print_latex_node_tree(out, temp_node->children, scratch);
-				g_string_append_printf(out, "}}\\glsadd{%s}",temp_node->children->children->str);
+				mmd_g_string_append_printf(out, "}}\\glsadd{%s}",temp_node->children->children->str);
 			} else {
-				g_string_append_printf(out, "\\footnote{");
+				mmd_g_string_append_printf(out, "\\footnote{");
 				print_latex_node_tree(out, temp_node->children, scratch);
-				g_string_append_printf(out, "}");
+				mmd_g_string_append_printf(out, "}");
 			}
 			scratch->padded = 0;
 			break;
@@ -677,10 +677,10 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 				/* external citation (e.g. BibTeX) */
 				n->link_data->label[strlen(n->link_data->label)-1] = '\0';
 				if (n->key == NOCITATION) {
-					g_string_append_printf(out, "~\\nocite{%s}",&n->str[2]);
+					mmd_g_string_append_printf(out, "~\\nocite{%s}",&n->str[2]);
 				} else {
-					g_string_append_printf(out, "<FAKE span class=\"externalcitation\">");
-					g_string_append_printf(out, "</span>");
+					mmd_g_string_append_printf(out, "<FAKE span class=\"externalcitation\">");
+					mmd_g_string_append_printf(out, "</span>");
 				}
 			} else {
 #ifdef DEBUG_ON
@@ -700,14 +700,14 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 						scratch->max_footnote_num = lev;
 					}
 					if (n->key == NOCITATION) {
-						g_string_append_printf(out, "~\\nocite{%s}", n->link_data->label);
+						mmd_g_string_append_printf(out, "~\\nocite{%s}", n->link_data->label);
 					} else {
 						if (n->children != NULL) {
-							g_string_append_printf(out, "~\\citep[");
+							mmd_g_string_append_printf(out, "~\\citep[");
 							print_latex_node(out, n->children, scratch);
-							g_string_append_printf(out,"]{%s}",n->link_data->label);
+							mmd_g_string_append_printf(out,"]{%s}",n->link_data->label);
 						} else {
-							g_string_append_printf(out, "~\\citep{%s}", n->link_data->label);
+							mmd_g_string_append_printf(out, "~\\citep{%s}", n->link_data->label);
 						}
 					}
 				} else {
@@ -717,29 +717,29 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 #endif
 					temp = n->link_data->label;
 					if (n->key == NOCITATION) {
-						g_string_append_printf(out, "~\\nocite{%s}",n->link_data->label);
+						mmd_g_string_append_printf(out, "~\\nocite{%s}",n->link_data->label);
 					} else {
 						if (n->children != NULL) {
 #ifdef DEBUG_ON
 				fprintf(stderr, "cite with children\n");
 #endif
 							if (strcmp(&temp[strlen(temp) - 1],";") == 0) {
-								g_string_append_printf(out, " \\citet[");
+								mmd_g_string_append_printf(out, " \\citet[");
 								temp[strlen(temp) - 1] = '\0';
 							} else {
-								g_string_append_printf(out, "~\\citep[");
+								mmd_g_string_append_printf(out, "~\\citep[");
 							}
 							print_latex_node(out, n->children, scratch);
-							g_string_append_printf(out, "]{%s}",temp);
+							mmd_g_string_append_printf(out, "]{%s}",temp);
 						} else {
 #ifdef DEBUG_ON
 				fprintf(stderr, "cite without children. locat:'%s'\n",n->str);
 #endif
 							if (strcmp(&temp[strlen(temp) - 1],";") == 0) {
 								temp[strlen(temp) - 1] = '\0';
-								g_string_append_printf(out, " \\citet{%s}",temp);
+								mmd_g_string_append_printf(out, " \\citet{%s}",temp);
 							} else {
-								g_string_append_printf(out, "~\\citep{%s}",temp);
+								mmd_g_string_append_printf(out, "~\\citep{%s}",temp);
 							}
 						}
 					}
@@ -752,7 +752,7 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 		case VARIABLE:
 			temp = metavalue_for_key(n->str,scratch->result_tree);
 			if (temp == NULL) {
-				g_string_append_printf(out, "[%%%s]",n->str);
+				mmd_g_string_append_printf(out, "[%%%s]",n->str);
 			} else {
 				print_latex_string(out, temp, scratch);
 				free(temp);
@@ -760,37 +760,37 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			break;
 		case GLOSSARYTERM:
 			if ((n->next != NULL) && (n->next->key == GLOSSARYSORTKEY) ) {
-				g_string_append_printf(out, "sort={");
+				mmd_g_string_append_printf(out, "sort={");
 				print_latex_string(out, n->next->str, scratch);
-				g_string_append_printf(out, "},");
+				mmd_g_string_append_printf(out, "},");
 			}
-			g_string_append_printf(out,"name={");
+			mmd_g_string_append_printf(out,"name={");
 			print_latex_string(out, n->children->str, scratch);
-			g_string_append_printf(out, "},description={");
+			mmd_g_string_append_printf(out, "},description={");
 			break;
 		case GLOSSARYSORTKEY:
 			break;
 		case CODE:
-			g_string_append_printf(out, "\\texttt{");
+			mmd_g_string_append_printf(out, "\\texttt{");
 			print_latex_string(out, n->str, scratch);
-			g_string_append_printf(out, "}");
+			mmd_g_string_append_printf(out, "}");
 			break;
 		case BLOCKQUOTEMARKER:
 			print_latex_node_tree(out, n->children, scratch);
 			break;
 		case BLOCKQUOTE:
 			pad(out,2, scratch);
-			g_string_append_printf(out, "\\begin{quote}");
+			mmd_g_string_append_printf(out, "\\begin{quote}");
 			scratch->padded = 0;
 			print_latex_node_tree(out, n->children, scratch);
 			pad(out,1, scratch);
-			g_string_append_printf(out, "\\end{quote}");
+			mmd_g_string_append_printf(out, "\\end{quote}");
 			scratch->padded = 0;
 			break;
 		case RAW:
 			/* This shouldn't happen */
-			g_string_append_printf(out, "RAW:");
-			g_string_append_printf(out,"%s",n->str);
+			mmd_g_string_append_printf(out, "RAW:");
+			mmd_g_string_append_printf(out,"%s",n->str);
 			break;
 		case HTML:
 			/* don't print HTML block */
@@ -798,24 +798,24 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			if (strncmp(n->str,"<!--",4) == 0) {
 				/* trim "-->" from end */
 				n->str[strlen(n->str)-3] = '\0';
-				g_string_append_printf(out, "%s", &n->str[4]);
+				mmd_g_string_append_printf(out, "%s", &n->str[4]);
 				scratch->padded = 0;
 			}
 			break;
 		case DEFLIST:
 			pad(out,2, scratch);
-			g_string_append_printf(out, "\\begin{description}");
+			mmd_g_string_append_printf(out, "\\begin{description}");
 			scratch->padded = 0;
 			print_latex_node_tree(out, n->children, scratch);
 			pad(out, 1, scratch);
-			g_string_append_printf(out, "\\end{description}");
+			mmd_g_string_append_printf(out, "\\end{description}");
 			scratch->padded = 0;
 			break;
 		case TERM:
 			pad(out,2, scratch);
-			g_string_append_printf(out, "\\item[");
+			mmd_g_string_append_printf(out, "\\item[");
 			print_latex_node_tree(out, n->children, scratch);
-			g_string_append_printf(out, "]");
+			mmd_g_string_append_printf(out, "]");
 			scratch->padded = 0;
 			break;
 		case DEFINITION:
@@ -826,24 +826,24 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			break;
 		case TABLE:
 			pad(out, 2, scratch);
-			g_string_append_printf(out, "\\begin{table}[htbp]\n\\begin{minipage}{\\linewidth}\n\\setlength{\\tymax}{0.5\\linewidth}\n\\centering\n\\small\n");
+			mmd_g_string_append_printf(out, "\\begin{table}[htbp]\n\\begin{minipage}{\\linewidth}\n\\setlength{\\tymax}{0.5\\linewidth}\n\\centering\n\\small\n");
 			print_latex_node_tree(out, n->children, scratch);
-			g_string_append_printf(out, "\n\\end{tabulary}\n\\end{minipage}\n\\end{table}");
+			mmd_g_string_append_printf(out, "\n\\end{tabulary}\n\\end{minipage}\n\\end{table}");
 			scratch->padded = 0;
 			break;
 		case TABLESEPARATOR:
-			temp_str = g_string_new("");
+			temp_str = mmd_g_string_new("");
 			for (i = 0; n->str[i]; i++) {
 				if (n->str[i] != 'h')
-					g_string_append_printf(temp_str,"%c",toupper(n->str[i]));
+					mmd_g_string_append_printf(temp_str,"%c",toupper(n->str[i]));
 			}
-			g_string_append_printf(out, "\\begin{tabulary}{\\textwidth}{@{}%s@{}} \\toprule\n", temp_str->str);
-			
+			mmd_g_string_append_printf(out, "\\begin{tabulary}{\\textwidth}{@{}%s@{}} \\toprule\n", temp_str->str);
+
 			if (scratch->table_alignment != NULL)
 				free(scratch->table_alignment);
 
 			scratch->table_alignment = temp_str->str;
-			g_string_free(temp_str, false);
+			mmd_g_string_free(temp_str, false);
 			break;
 		case TABLECAPTION:
 			if ((n->children != NULL) && (n->children->key == TABLELABEL)) {
@@ -851,43 +851,43 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 			} else {
 				temp = label_from_node_tree(n->children);
 			}
-			g_string_append_printf(out, "\\caption{");
+			mmd_g_string_append_printf(out, "\\caption{");
 			print_latex_node_tree(out, n->children, scratch);
-			g_string_append_printf(out, "}\n\\label{%s}\n", temp);
+			mmd_g_string_append_printf(out, "}\n\\label{%s}\n", temp);
 			free(temp);
 			break;
 		case TABLELABEL:
 			break;
 		case TABLEHEAD:
 			print_latex_node_tree(out, n->children, scratch);
-			g_string_append_printf(out, "\\midrule\n");
+			mmd_g_string_append_printf(out, "\\midrule\n");
 			break;
 		case TABLEBODY:
 			print_latex_node_tree(out, n->children, scratch);
 			if ((n->next != NULL) && (n->next->key == TABLEBODY)) {
-				g_string_append_printf(out, "\n\\midrule\n");
+				mmd_g_string_append_printf(out, "\n\\midrule\n");
 			} else {
-				g_string_append_printf(out, "\n\\bottomrule\n");
+				mmd_g_string_append_printf(out, "\n\\bottomrule\n");
 			}
 			break;
 		case TABLEROW:
 			print_latex_node_tree(out, n->children, scratch);
-			g_string_append_printf(out, "\\\\\n");
+			mmd_g_string_append_printf(out, "\\\\\n");
 			scratch->table_column = 0;
 			break;
 		case TABLECELL:
 			scratch->padded = 2;
 			temp = scratch->table_alignment;
 			if ((n->children != NULL) && (n->children->key == CELLSPAN)) {
-				g_string_append_printf(out, "\\multicolumn{%d}{%c}{",
+				mmd_g_string_append_printf(out, "\\multicolumn{%d}{%c}{",
 					(int)strlen(n->children->str)+1,tolower(temp[scratch->table_column]));
 			}
 			print_latex_node_tree(out, n->children, scratch);
 			if ((n->children != NULL) && (n->children->key == CELLSPAN)) {
-				g_string_append_printf(out, "}");
+				mmd_g_string_append_printf(out, "}");
 			}
 			if (n->next != NULL)
-				g_string_append_printf(out, "&");
+				mmd_g_string_append_printf(out, "&");
 			if ((n->children != NULL) && (n->children->key == CELLSPAN)) {
 				scratch->table_column += (int)strlen(n->children->str);
 			}
@@ -911,10 +911,10 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 		case GLOSSARYLABEL:
 			break;
 		case SUPERSCRIPT:
-			g_string_append_printf(out, "\\textsuperscript{%s}",n->str);
+			mmd_g_string_append_printf(out, "\\textsuperscript{%s}",n->str);
 			break;
 		case SUBSCRIPT:
-			g_string_append_printf(out, "\\textsubscript{%s}",n->str);
+			mmd_g_string_append_printf(out, "\\textsubscript{%s}",n->str);
 			break;
 		case KEY_COUNTER:
 			break;
@@ -928,7 +928,7 @@ void print_latex_node(GString *out, node *n, scratch_pad *scratch) {
 }
 
 /* print_latex_endnotes */
-void print_latex_endnotes(GString *out, scratch_pad *scratch) {
+void print_latex_endnotes(MMD_GString *out, scratch_pad *scratch) {
 	scratch->used_notes = reverse_list(scratch->used_notes);
 	scratch->printing_notes = 1;
 
@@ -936,7 +936,7 @@ void print_latex_endnotes(GString *out, scratch_pad *scratch) {
 #ifdef DEBUG_ON
 	fprintf(stderr, "start endnotes\n");
 #endif
-	
+
 	if ((note == NULL) || ((note->key == KEY_COUNTER) && (note->next == NULL)))
 		return;
 	while (note != NULL) {
@@ -947,26 +947,26 @@ void print_latex_endnotes(GString *out, scratch_pad *scratch) {
 
 	if (note == NULL)
 		return;
-	
+
 	note = scratch->used_notes;
-	
+
 	/* TODO: need CITATIONSOURCE to print bibliography */
 #ifdef DEBUG_ON
 	fprintf(stderr, "there are endnotes to print\n");
 #endif
 
 	pad(out, 2, scratch);
-	g_string_append_printf(out, "\\begin{thebibliography}{0}");
+	mmd_g_string_append_printf(out, "\\begin{thebibliography}{0}");
 	while ( note != NULL) {
 		if (note->key == KEY_COUNTER) {
 			note = note->next;
 			continue;
 		}
-		
+
 		pad(out, 1, scratch);
-		
+
 		if (note->key == CITATIONSOURCE) {
-			g_string_append_printf(out, "\\bibitem{%s}\n", note->str);
+			mmd_g_string_append_printf(out, "\\bibitem{%s}\n", note->str);
 			scratch->padded = 2;
 
 			print_latex_node(out, note, scratch);
@@ -979,7 +979,7 @@ void print_latex_endnotes(GString *out, scratch_pad *scratch) {
 		note = note->next;
 	}
 	pad(out,2, scratch);
-	g_string_append_printf(out, "\\end{thebibliography}");
+	mmd_g_string_append_printf(out, "\\end{thebibliography}");
 	scratch->padded = 0;
 #ifdef DEBUG_ON
 	fprintf(stderr, "finish endnotes\n");
@@ -1020,98 +1020,98 @@ bool is_latex_complete_doc(node *meta) {
 }
 
 /* print_latex_localized_typography -- convert to "smart" typography */
-void print_latex_localized_typography(GString *out, int character, scratch_pad *scratch) {
+void print_latex_localized_typography(MMD_GString *out, int character, scratch_pad *scratch) {
 	if (!extension(EXT_SMART, scratch->extensions)) {
-		g_string_append_c(out, character);
+		mmd_g_string_append_c(out, character);
 		return;
 	}
 	switch (character) {
 		case LSQUOTE:
 			switch (scratch->language) {
 				case SWEDISH:
-					g_string_append_printf(out, "'");
+					mmd_g_string_append_printf(out, "'");
 					break;
 				case FRENCH:
-					g_string_append_printf(out,"'");
+					mmd_g_string_append_printf(out,"'");
 					break;
 				case GERMAN:
-					g_string_append_printf(out,"‚");
+					mmd_g_string_append_printf(out,"‚");
 					break;
 				case GERMANGUILL:
-					g_string_append_printf(out,"›");
+					mmd_g_string_append_printf(out,"›");
 					break;
 				default:
-					g_string_append_printf(out,"`");
+					mmd_g_string_append_printf(out,"`");
 				}
 			break;
 		case RSQUOTE:
 			switch (scratch->language) {
 				case GERMAN:
-					g_string_append_printf(out,"`");
+					mmd_g_string_append_printf(out,"`");
 					break;
 				case GERMANGUILL:
-					g_string_append_printf(out,"‹");
+					mmd_g_string_append_printf(out,"‹");
 					break;
 				default:
-					g_string_append_printf(out,"'");
+					mmd_g_string_append_printf(out,"'");
 				}
 			break;
 		case APOS:
-			g_string_append_printf(out,"'");
+			mmd_g_string_append_printf(out,"'");
 			break;
 		case LDQUOTE:
 			switch (scratch->language) {
 				case DUTCH:
 				case GERMAN:
-					g_string_append_printf(out,"„");
+					mmd_g_string_append_printf(out,"„");
 					break;
 				case GERMANGUILL:
-					g_string_append_printf(out,"»");
+					mmd_g_string_append_printf(out,"»");
 					break;
 				case FRENCH:
-					g_string_append_printf(out,"«");
+					mmd_g_string_append_printf(out,"«");
 					break;
 				case SWEDISH:
-					g_string_append_printf(out, "''");
+					mmd_g_string_append_printf(out, "''");
 					break;
 				default:
-					g_string_append_printf(out,"``");
+					mmd_g_string_append_printf(out,"``");
 				}
 			break;
 		case RDQUOTE:
 			switch (scratch->language) {
 				case SWEDISH:
 				case DUTCH:
-					g_string_append_printf(out,"''");
+					mmd_g_string_append_printf(out,"''");
 					break;
 				case GERMAN:
-					g_string_append_printf(out,"``");
+					mmd_g_string_append_printf(out,"``");
 					break;
 				case GERMANGUILL:
-					g_string_append_printf(out,"«");
+					mmd_g_string_append_printf(out,"«");
 					break;
 				case FRENCH:
-					g_string_append_printf(out,"»");
+					mmd_g_string_append_printf(out,"»");
 					break;
 				default:
-					g_string_append_printf(out,"''");
+					mmd_g_string_append_printf(out,"''");
 				}
 			break;
 		case NDASH:
-			g_string_append_printf(out,"--");
+			mmd_g_string_append_printf(out,"--");
 			break;
 		case MDASH:
-			g_string_append_printf(out,"---");
+			mmd_g_string_append_printf(out,"---");
 			break;
 		case ELLIP:
-			g_string_append_printf(out,"{\\ldots}");
+			mmd_g_string_append_printf(out,"{\\ldots}");
 			break;
 			default:;
 	}
 }
 
 /* print_latex_string - print string, escaping for LaTeX */
-void print_latex_string(GString *out, char *str, scratch_pad *scratch) {
+void print_latex_string(MMD_GString *out, char *str, scratch_pad *scratch) {
 	char *tmp;
 	char *start;
 	if (str == NULL)
@@ -1121,33 +1121,33 @@ void print_latex_string(GString *out, char *str, scratch_pad *scratch) {
 		switch (*str) {
 			case '{': case '}': case '$': case '%':
 			case '&': case '_': case '#':
-				g_string_append_printf(out, "\\%c", *str);
+				mmd_g_string_append_printf(out, "\\%c", *str);
 				break;
 			case '^':
-				g_string_append_printf(out, "\\^{}");
+				mmd_g_string_append_printf(out, "\\^{}");
 				break;
 			case '\\':
-				g_string_append_printf(out, "\\textbackslash{}");
+				mmd_g_string_append_printf(out, "\\textbackslash{}");
 				break;
 			case '~':
-				g_string_append_printf(out, "\\ensuremath{\\sim}");
+				mmd_g_string_append_printf(out, "\\ensuremath{\\sim}");
 				break;
 			case '|':
-				g_string_append_printf(out, "\\textbar{}");
+				mmd_g_string_append_printf(out, "\\textbar{}");
 				break;
 			case '<':
-				g_string_append_printf(out, "$<$");
+				mmd_g_string_append_printf(out, "$<$");
 				break;
 			case '>':
-				g_string_append_printf(out, "$>$");
+				mmd_g_string_append_printf(out, "$>$");
 				break;
 			case '/':
 				str++;
 				while (*str == '/') {
-					g_string_append_printf(out, "/");
+					mmd_g_string_append_printf(out, "/");
 					str++;
 				}
-				g_string_append_printf(out, "\\slash ");
+				mmd_g_string_append_printf(out, "\\slash ");
 				str--;
 				break;
 			case '\n':
@@ -1156,46 +1156,46 @@ void print_latex_string(GString *out, char *str, scratch_pad *scratch) {
 				if ((tmp > start) && (*tmp == ' ')) {
 					tmp--;
 					if (*tmp == ' ') {
-						g_string_append_printf(out, "\\\\\n");
+						mmd_g_string_append_printf(out, "\\\\\n");
 					} else {
-						g_string_append_printf(out, "\n");
+						mmd_g_string_append_printf(out, "\n");
 					}
 				} else {
-					g_string_append_printf(out, "\n");
+					mmd_g_string_append_printf(out, "\n");
 				}
 				break;
 			case '-':
 				str++;
 				if (*str == '-') {
-					g_string_append_printf(out, "-{}");
+					mmd_g_string_append_printf(out, "-{}");
 					str--;
 				} else {
 					str--;
-					g_string_append_c(out,*str);
+					mmd_g_string_append_c(out,*str);
 				}
 				break;
 			default:
-				g_string_append_c(out, *str);
+				mmd_g_string_append_c(out, *str);
 			}
 		str++;
 	}
 }
 
 /* print_latex_url - print url, escaping for LaTeX */
-void print_latex_url(GString *out, char *str, scratch_pad *scratch) {
+void print_latex_url(MMD_GString *out, char *str, scratch_pad *scratch) {
 	if (str == NULL)
 		return;
 	while (*str != '\0') {
 		switch (*str) {
 			case '$': case '%': case '!':
 			case '&': case '_': case '#':
-				g_string_append_printf(out, "\\%c", *str);
+				mmd_g_string_append_printf(out, "\\%c", *str);
 				break;
 			case '^':
-				g_string_append_printf(out, "\\^{}");
+				mmd_g_string_append_printf(out, "\\^{}");
 				break;
 			default:
-				g_string_append_c(out, *str);
+				mmd_g_string_append_c(out, *str);
 			}
 		str++;
 	}
@@ -1204,16 +1204,16 @@ void print_latex_url(GString *out, char *str, scratch_pad *scratch) {
 char * correct_dimension_units(char *original) {
 	char *result;
 	int i;
-	
+
 	result = strdup(original);
-	
+
 	for (i = 0; result[i]; i++)
 		result[i] = tolower(result[i]);
-	
+
 	if (strstr(&result[strlen(result)-2],"px")) {
 		result[strlen(result)-2] = '\0';
 		strcat(result, "pt");
 	}
-	
+
 	return result;
 }

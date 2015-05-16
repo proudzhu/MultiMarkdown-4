@@ -24,7 +24,7 @@
 bool need_fragile; // if the frame needs to be fragile
 
 /* print_beamer_node_tree -- convert node tree to LyX */
-void print_lyxbeamer_node_tree(GString *out, node *list, scratch_pad *scratch, bool no_newline) {
+void print_lyxbeamer_node_tree(MMD_GString *out, node *list, scratch_pad *scratch, bool no_newline) {
 	while (list != NULL) {
 		print_lyxbeamer_node(out, list, scratch, no_newline);
 		list = list->next;
@@ -32,7 +32,7 @@ void print_lyxbeamer_node_tree(GString *out, node *list, scratch_pad *scratch, b
 }
 
 /* print_beamer_node -- convert given node to LyX and append */
-void print_lyxbeamer_node(GString *out, node *n, scratch_pad *scratch, bool no_newline) {
+void print_lyxbeamer_node(MMD_GString *out, node *n, scratch_pad *scratch, bool no_newline) {
 	int lev;
 	int i;
 	char *temp;
@@ -50,10 +50,10 @@ void print_lyxbeamer_node(GString *out, node *n, scratch_pad *scratch, bool no_n
 	switch (n->key) {
 		case FOOTER:
 			if (scratch->lyx_in_frame){  // have an open frame
-				      g_string_append(out,"\n\\end_deeper");
+				      mmd_g_string_append(out,"\n\\end_deeper");
 //				      g_string_append(out,"\n\\end_layout");
-				      g_string_append(out, "\n\\begin_layout Separator");
-					  g_string_append(out, "\n\\end_layout");
+				      mmd_g_string_append(out, "\n\\begin_layout Separator");
+					  mmd_g_string_append(out, "\n\\end_layout");
         	}
         	scratch->lyx_in_frame = FALSE; 
         	print_lyxbeamer_endnotes(out, scratch);
@@ -66,16 +66,16 @@ void print_lyxbeamer_node(GString *out, node *n, scratch_pad *scratch, bool no_n
 			scratch->lyx_para_type = n->key;
 			scratch->lyx_level++;
 			if (scratch->lyx_level > 1){
-				g_string_append(out,"\n\\begin_deeper\n");
+				mmd_g_string_append(out,"\n\\begin_deeper\n");
 			}
 			print_lyxbeamer_node_tree(out, n->children, scratch, FALSE);
 		    scratch->lyx_level--;
 		    if (scratch->lyx_level > 0){   
-		        g_string_append(out,"\n\\end_deeper\n");
+		        mmd_g_string_append(out,"\n\\end_deeper\n");
 		    }
 			scratch->lyx_para_type = old_type;
 			if (scratch->lyx_definition_open){
-			   g_string_append(out,"\n\\end_deeper\n");
+			   mmd_g_string_append(out,"\n\\end_deeper\n");
 			   scratch->lyx_definition_open = FALSE;
             }
 			break;
@@ -90,7 +90,7 @@ void print_lyxbeamer_node(GString *out, node *n, scratch_pad *scratch, bool no_n
 				while (temp_node != NULL){
 					i++;
 					if (i == 2){
-					  g_string_append(out,"\n\\begin_deeper\n");
+					  mmd_g_string_append(out,"\n\\begin_deeper\n");
 					  old_type = scratch->lyx_para_type;
 					  scratch->lyx_para_type = PARA; // and make it a paragraph, not a list item
 					}
@@ -100,16 +100,16 @@ void print_lyxbeamer_node(GString *out, node *n, scratch_pad *scratch, bool no_n
 				}
 				if (i>1){
 					scratch->lyx_para_type = old_type; // reset the paragraph type
-					g_string_append(out,"\n\\end_deeper\n");
+					mmd_g_string_append(out,"\n\\end_deeper\n");
 				}
 			}
 			break;
         case HEADINGSECTION:
         	if (scratch->lyx_in_frame){  // have an open frame
-				      g_string_append(out,"\n\\end_deeper");
+				      mmd_g_string_append(out,"\n\\end_deeper");
 //				      g_string_append(out,"\n\\end_layout");
-				      g_string_append(out, "\n\\begin_layout Separator");
-					  g_string_append(out, "\n\\end_layout");
+				      mmd_g_string_append(out, "\n\\begin_layout Separator");
+					  mmd_g_string_append(out, "\n\\end_layout");
         	}
         	scratch->lyx_in_frame = FALSE;
         	need_fragile = FALSE;
@@ -122,31 +122,31 @@ void print_lyxbeamer_node(GString *out, node *n, scratch_pad *scratch, bool no_n
 			lev = n->key - H1 + scratch->baseheaderlevel;  /* assumes H1 ... H6 are in order */
 			switch (lev) {
 				case 1:
-					g_string_append(out, "\n\\begin_layout Part\n");
+					mmd_g_string_append(out, "\n\\begin_layout Part\n");
 					break;
 				case 2:
-					g_string_append(out, "\n\\begin_layout Section\n");
+					mmd_g_string_append(out, "\n\\begin_layout Section\n");
 					break;
 				case 3:
 					if (need_fragile) {
-					  g_string_append(out, "\n\\begin_layout FragileFrame");
+					  mmd_g_string_append(out, "\n\\begin_layout FragileFrame");
 				    } else {
-					  g_string_append(out, "\n\\begin_layout Frame");
+					  mmd_g_string_append(out, "\n\\begin_layout Frame");
 				    };	
-					g_string_append(out,"\n\\begin_inset Argument 4");
-					g_string_append(out,"\nstatus open\n");
-					g_string_append(out,"\n\\begin_layout Plain Layout\n");
+					mmd_g_string_append(out,"\n\\begin_inset Argument 4");
+					mmd_g_string_append(out,"\nstatus open\n");
+					mmd_g_string_append(out,"\n\\begin_layout Plain Layout\n");
 				    scratch->lyx_in_frame = TRUE;
 					break;
 				case 4:
-					g_string_append(out,"\n\\begin_layout Standard");
-					g_string_append(out, "\n\\begin_inset Flex ArticleMode");
-					g_string_append(out, "\nstatus open\n\n");
-					g_string_append(out,"\n\\begin_layout Plain Layout\n");
+					mmd_g_string_append(out,"\n\\begin_layout Standard");
+					mmd_g_string_append(out, "\n\\begin_inset Flex ArticleMode");
+					mmd_g_string_append(out, "\nstatus open\n\n");
+					mmd_g_string_append(out,"\n\\begin_layout Plain Layout\n");
 					break;
 				default:
-					g_string_append(out,"\n\\begin_layout Standard");
-					g_string_append(out, "\n\\emph on\n");
+					mmd_g_string_append(out,"\n\\begin_layout Standard");
+					mmd_g_string_append(out, "\n\\emph on\n");
 					break;
 			}
 			/* Don't allow footnotes */
@@ -156,10 +156,10 @@ void print_lyxbeamer_node(GString *out, node *n, scratch_pad *scratch, bool no_n
 				temp = label_from_string(n->children->str);
 				prefixed_label = prefix_label(heading_name[lev-1]->str,temp,FALSE);
 				print_lyx_node_tree(out, n->children->next, scratch , FALSE);
-				g_string_append(out,"\n\\begin_inset CommandInset label\n");
-				g_string_append(out,"LatexCommand label\n");
-				g_string_append_printf(out, "name \"%s\"",prefixed_label);
-				g_string_append(out,"\n\\end_inset\n");
+				mmd_g_string_append(out,"\n\\begin_inset CommandInset label\n");
+				mmd_g_string_append(out,"LatexCommand label\n");
+				mmd_g_string_append_printf(out, "name \"%s\"",prefixed_label);
+				mmd_g_string_append(out,"\n\\end_inset\n");
 				free(prefixed_label);
 				free(temp);
 			} else {
@@ -167,32 +167,32 @@ void print_lyxbeamer_node(GString *out, node *n, scratch_pad *scratch, bool no_n
 				temp = label_from_node_tree(n->children);
 				prefixed_label = prefix_label(heading_name[lev-1]->str,temp,FALSE);
 				print_lyx_node_tree(out, n->children, scratch, FALSE);
-				g_string_append(out,"\n\\begin_inset CommandInset label\n");
-				g_string_append(out,"LatexCommand label\n");
-				g_string_append_printf(out, "name \"%s\"",prefixed_label);
-				g_string_append(out,"\n\\end_inset\n");
+				mmd_g_string_append(out,"\n\\begin_inset CommandInset label\n");
+				mmd_g_string_append(out,"LatexCommand label\n");
+				mmd_g_string_append_printf(out, "name \"%s\"",prefixed_label);
+				mmd_g_string_append(out,"\n\\end_inset\n");
 				free(prefixed_label);
 				free(temp);
 			}
 			scratch->no_lyx_footnote = FALSE;
 			switch(lev){
 				case 1: case 2:
-				    g_string_append(out,"\n\\end_layout\n");
+				    mmd_g_string_append(out,"\n\\end_layout\n");
 					break;
 				case 3:
-					  g_string_append(out,"\n\\end_layout\n");
-					  g_string_append(out,"\n\\end_inset\n");
-					  g_string_append(out,"\n\\end_layout\n");
-				      g_string_append(out,"\n\\begin_deeper\n");
+					  mmd_g_string_append(out,"\n\\end_layout\n");
+					  mmd_g_string_append(out,"\n\\end_inset\n");
+					  mmd_g_string_append(out,"\n\\end_layout\n");
+				      mmd_g_string_append(out,"\n\\begin_deeper\n");
 					break;
 				case 4:
-					g_string_append(out,"\n\\end_layout");
-					g_string_append(out,"\n\\end_inset");
-					g_string_append(out,"\n\\end_layout");
+					mmd_g_string_append(out,"\n\\end_layout");
+					mmd_g_string_append(out,"\n\\end_inset");
+					mmd_g_string_append(out,"\n\\end_layout");
 					break;
 				default:
-					g_string_append(out, "\n\\emph default\n");
-					g_string_append(out,"\n\\end_layout");
+					mmd_g_string_append(out, "\n\\emph default\n");
+					mmd_g_string_append(out,"\n\\end_layout");
 					break;
 			}
 			
@@ -204,7 +204,7 @@ void print_lyxbeamer_node(GString *out, node *n, scratch_pad *scratch, bool no_n
 }
 
 /* print_beamer_endnotes */
-void print_lyxbeamer_endnotes(GString *out, scratch_pad *scratch) {
+void print_lyxbeamer_endnotes(MMD_GString *out, scratch_pad *scratch) {
 	node *temp_node;
 	scratch->used_notes = reverse_list(scratch->used_notes);
 	node *note = scratch->used_notes;
@@ -213,16 +213,16 @@ void print_lyxbeamer_endnotes(GString *out, scratch_pad *scratch) {
     temp_node = note;
     while (temp_node != NULL){
     	if(temp_node->key == GLOSSARYSOURCE){
-    	g_string_append(out, "\n\\begin_layout BeginFrame\nGlossary\n");
-    	g_string_append(out,"\n\\begin_layout Standard");
-    	g_string_append(out,"\n\\begin_inset CommandInset nomencl_print");
-    	g_string_append(out,"\nLatexCommand printnomenclature");
-    	g_string_append(out,"\nset_width \"auto\"\n");
-    	g_string_append(out,"\n\\end_inset\n");
-    	g_string_append(out,"\n\\end_layout\n");
-    	g_string_append(out, "\n\\end_layout\n");
-    	g_string_append(out, "\n\\begin_layout EndFrame");
-		g_string_append(out, "\n\\end_layout");
+    	mmd_g_string_append(out, "\n\\begin_layout BeginFrame\nGlossary\n");
+    	mmd_g_string_append(out,"\n\\begin_layout Standard");
+    	mmd_g_string_append(out,"\n\\begin_inset CommandInset nomencl_print");
+    	mmd_g_string_append(out,"\nLatexCommand printnomenclature");
+    	mmd_g_string_append(out,"\nset_width \"auto\"\n");
+    	mmd_g_string_append(out,"\n\\end_inset\n");
+    	mmd_g_string_append(out,"\n\\end_layout\n");
+    	mmd_g_string_append(out, "\n\\end_layout\n");
+    	mmd_g_string_append(out, "\n\\begin_layout EndFrame");
+		mmd_g_string_append(out, "\n\\end_layout");
     	break;
         }
 		temp_node = temp_node->next;
@@ -234,8 +234,8 @@ void print_lyxbeamer_endnotes(GString *out, scratch_pad *scratch) {
 	note = scratch->used_notes;
 	
 	if (tree_contains_key(note,CITATIONSOURCE)){
-	   g_string_append(out, "\n\\begin_layout BeginFrame\nReferences\n");
-	   g_string_append(out, "\n\\end_layout");
+	   mmd_g_string_append(out, "\n\\begin_layout BeginFrame\nReferences\n");
+	   mmd_g_string_append(out, "\n\\end_layout");
     }
 	while ( note != NULL) {
 		if (note->key == KEY_COUNTER) {
@@ -245,21 +245,21 @@ void print_lyxbeamer_endnotes(GString *out, scratch_pad *scratch) {
 		
 		
 		if (note->key == CITATIONSOURCE) {
-			g_string_append(out, "\n\\begin_layout Bibliography\n");
-			g_string_append(out,"\\begin_inset CommandInset bibitem\n");
-			g_string_append(out,"LatexCommand bibitem\n");
-			g_string_append_printf(out, "key \"%s\"\n", note->str);
-			g_string_append_printf(out, "label \"%s\"\n", note->str);
-			g_string_append(out,"\n\\end_inset\n");
+			mmd_g_string_append(out, "\n\\begin_layout Bibliography\n");
+			mmd_g_string_append(out,"\\begin_inset CommandInset bibitem\n");
+			mmd_g_string_append(out,"LatexCommand bibitem\n");
+			mmd_g_string_append_printf(out, "key \"%s\"\n", note->str);
+			mmd_g_string_append_printf(out, "label \"%s\"\n", note->str);
+			mmd_g_string_append(out,"\n\\end_inset\n");
 			print_lyx_node(out, note, scratch, FALSE);
-			g_string_append(out,"\n\\end_layout\n");
+			mmd_g_string_append(out,"\n\\end_layout\n");
 		} else {
 			/* footnotes handled elsewhere */
 		}
 
 		note = note->next;
 	}
-	g_string_append(out, "\n\\begin_layout EndFrame"); // close last frame
-	g_string_append(out, "\n\\end_layout");
+	mmd_g_string_append(out, "\n\\begin_layout EndFrame"); // close last frame
+	mmd_g_string_append(out, "\n\\end_layout");
 
 }

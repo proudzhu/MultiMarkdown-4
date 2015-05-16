@@ -23,7 +23,7 @@
 
 
 /* print_text_node_tree -- convert node tree to plain text */
-void print_text_node_tree(GString *out, node *list, scratch_pad *scratch) {
+void print_text_node_tree(MMD_GString *out, node *list, scratch_pad *scratch) {
 	while (list != NULL) {
 		print_text_node(out, list, scratch);
 		list = list->next;
@@ -31,20 +31,20 @@ void print_text_node_tree(GString *out, node *list, scratch_pad *scratch) {
 }
 
 /* print_text_node -- convert given node to plain text and append */
-void print_text_node(GString *out, node *n, scratch_pad *scratch) {
+void print_text_node(MMD_GString *out, node *n, scratch_pad *scratch) {
 	switch (n->key) {
 		case STR:
-			g_string_append_printf(out,"%s",n->str);
+			mmd_g_string_append_printf(out,"%s",n->str);
 			break;
 		case METADATA:
 			print_text_node_tree(out,n->children,scratch);
 			break;
 		case METAKEY:
-			g_string_append_printf(out,"%s:\t",n->str);
+			mmd_g_string_append_printf(out,"%s:\t",n->str);
 			print_text_node(out,n->children,scratch);
 			break;
 		case METAVALUE:
-			g_string_append_printf(out,"%s",n->str);
+			mmd_g_string_append_printf(out,"%s",n->str);
 			pad(out,1, scratch);
 			break;
 		case FOOTER:

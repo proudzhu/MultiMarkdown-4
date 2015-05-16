@@ -26,7 +26,7 @@
 char * export_node_tree(node *list, int format, unsigned long extensions) {
 	char *output;
 	char *temp;
-	GString *out = g_string_new("");
+	MMD_GString *out = mmd_g_string_new("");
 	scratch_pad *scratch = mk_scratch_pad(extensions);
 	scratch->result_tree = list;  /* Pointer to result tree to use later */
 
@@ -63,11 +63,11 @@ char * export_node_tree(node *list, int format, unsigned long extensions) {
 			if (scratch->extensions & EXT_COMPLETE) {
 				temp = metavalue_for_key("lang", scratch->result_tree);
 				if (temp != NULL) {
-				    g_string_append_printf(out,
+				    mmd_g_string_append_printf(out,
 					"<!DOCTYPE html>\n<html lang=\"%s\">\n<head>\n\t<meta charset=\"utf-8\"/>\n",temp);
 					free(temp);
 				} else {
-				    g_string_append_printf(out,
+				    mmd_g_string_append_printf(out,
 					"<!DOCTYPE html>\n<html>\n<head>\n\t<meta charset=\"utf-8\"/>\n");
 				}
 			}
@@ -84,7 +84,7 @@ char * export_node_tree(node *list, int format, unsigned long extensions) {
 #endif
 			if (scratch->extensions & EXT_COMPLETE) {
 				pad(out,2, scratch);
-				g_string_append_printf(out, "</body>\n</html>");
+				mmd_g_string_append_printf(out, "</body>\n</html>");
 			}
 #ifdef DEBUG_ON
 	fprintf(stderr, "closed HTML document\n");
@@ -156,7 +156,7 @@ char * export_node_tree(node *list, int format, unsigned long extensions) {
 	}
 	
 	output = out->str;
-	g_string_free(out, false);
+	mmd_g_string_free(out, false);
 	free_scratch_pad(scratch);
 
 #ifdef DEBUG_ON
@@ -408,9 +408,9 @@ link_data * extract_link_data(char *label, scratch_pad *scratch) {
 }
 
 /* pad -- ensure that at least 'x' newlines are at end of output */
-void pad(GString *out, int num, scratch_pad *scratch) {
+void pad(MMD_GString *out, int num, scratch_pad *scratch) {
 	while (num-- > scratch->padded)
-		g_string_append_c(out, '\n');
+		mmd_g_string_append_c(out, '\n');
 	
 	scratch->padded = num;
 }
@@ -655,7 +655,7 @@ char * dimension_for_attribute(char *querystring, node *list) {
     char *ptr;
     int i;
     char *upper;
-    GString *result;
+    MMD_GString *result;
 
     attribute = node_for_attribute(querystring, list);
     if (attribute == NULL) return NULL;
@@ -681,18 +681,18 @@ char * dimension_for_attribute(char *querystring, node *list) {
         strcat(ptr,"pt");
     }
 
-    result = g_string_new(dimension);
+    result = mmd_g_string_new(dimension);
     
     if ((strcmp(dimension,upper) == 0) && (dimension[strlen(dimension) -1] != '%')) {
         /* no units */
-        g_string_append_printf(result, "pt");
+        mmd_g_string_append_printf(result, "pt");
     }
 
     free(upper);
     free(dimension);
     
     dimension = result->str;
-    g_string_free(result, false);
+    mmd_g_string_free(result, false);
 #ifdef DEBUG_ON
 	fprintf(stderr, "finish dimension_for_attribute\n");
 #endif
@@ -703,7 +703,7 @@ char * dimension_for_attribute(char *querystring, node *list) {
 /* Load available info for a link */
 link_data * load_link_data(node *n, scratch_pad *scratch) {
 	link_data *r = NULL;
-	GString *temp_str = NULL;
+	MMD_GString *temp_str = NULL;
 	char *temp;
 
 	r = mk_link_data(n->link_data->label, n->link_data->source, n->link_data->title, n->link_data->attr);
@@ -713,10 +713,10 @@ link_data * load_link_data(node *n, scratch_pad *scratch) {
 	(r->source == NULL)) {
 		/* we seem to be a [foo][] style link */
 		/* so load a label */
-		temp_str = g_string_new("");
+		temp_str = mmd_g_string_new("");
 		print_raw_node_tree(temp_str, n->children);
 		r->label = temp_str->str;
-		g_string_free(temp_str, FALSE);
+		mmd_g_string_free(temp_str, FALSE);
 	}
 	/* Load data by reference */
 	if (r->label != NULL) {

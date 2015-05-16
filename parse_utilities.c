@@ -48,13 +48,13 @@ node * mk_str_from_list(node *list, bool extra_newline) {
 	node *result = mk_node(STR);
 	node *rev = reverse_list(list);
 	
-	GString *c = concat_string_list(rev);
+	MMD_GString *c = concat_string_list(rev);
 	if (extra_newline)
-		g_string_append(c, "\n");
+		mmd_g_string_append(c, "\n");
 
 	result->str = c->str;
 	
-	g_string_free(c, false);
+	mmd_g_string_free(c, false);
 	return result;
 }
 
@@ -68,26 +68,26 @@ node * mk_link(node *text, char *label, char *source, char *title, node *attr) {
 
 node * mk_autolink(char *text) {
 	char *label = label_from_string(text);
-	GString *anchor = g_string_new(label);
-	g_string_prepend(anchor, "#");
+	MMD_GString *anchor = mmd_g_string_new(label);
+	mmd_g_string_prepend(anchor, "#");
 
 	node *result = mk_node(LINK);
 	result->link_data = mk_link_data(label, anchor->str, NULL, NULL);
 
-	g_string_free(anchor, TRUE);
+	mmd_g_string_free(anchor, TRUE);
 	free(label);
 	return result;
 }
 
 /* concat_string_list - create string from STR's */
-GString * concat_string_list(node *list) {
-	GString *result;
+MMD_GString * concat_string_list(node *list) {
+	MMD_GString *result;
 	node *next;
-	result = g_string_new("");
+	result = mmd_g_string_new("");
 	while (list != NULL) {
 		assert(list->key == STR);
 		assert(list->str != NULL);
-		g_string_append(result, list->str);
+		mmd_g_string_append(result, list->str);
 		next = list->next;
 		free_node(list);
 		list = next;
@@ -291,7 +291,7 @@ scratch_pad * mk_scratch_pad(unsigned long extensions) {
 	result->no_lyx_footnote = 0;              /* CRC  */
 	result->lyx_number_headers = FALSE;       /* CRC - default is not to number */
 	result->lyx_debug_nest = 0;               /* CRC - initialize debug formatting */
-	result->lyx_debug_pad = g_string_new(""); /* CRC - initally, no indent */
+	result->lyx_debug_pad = mmd_g_string_new(""); /* CRC - initally, no indent */
 	result->lyx_definition_hit = TRUE;        /* CRC - initialize to have hit it (closed) */
 	result->lyx_definition_open = FALSE;      /* CRC - don't have an open definition */
 	result->lyx_in_frame = FALSE;             /* CRC - not in a frame */
@@ -315,7 +315,7 @@ void free_scratch_pad(scratch_pad *scratch) {
 	free_node_tree(scratch->citations);
 	free_node_tree(scratch->abbreviations);
 	
-	g_string_free(scratch->lyx_debug_pad, true);    /* CRC - initally, no indent */
+	mmd_g_string_free(scratch->lyx_debug_pad, true);    /* CRC - initally, no indent */
 	
 	if (scratch->latex_footer != NULL)
 		free(scratch->latex_footer);
@@ -377,7 +377,7 @@ bool extension(int ext, unsigned long extensions) {
    NOTE: This is still a bit experimental, and will be removed if it breaks things.
 */
 char *label_from_string(char *str) {
-	GString *out = g_string_new("");
+	MMD_GString *out = mmd_g_string_new("");
 	char *label;
 	char *next_char;
 
@@ -386,11 +386,11 @@ char *label_from_string(char *str) {
 		next_char++;
 		/* Is this a multibyte character? */
 		if ((*next_char & 0xC0) == 0x80) {
-			g_string_append_c(out, *str);
+			mmd_g_string_append_c(out, *str);
 			while ((*next_char & 0xC0) == 0x80) {
 				str++;
 				/* fprintf(stderr, "multibyte\n"); */
-				g_string_append_c(out, *str);
+				mmd_g_string_append_c(out, *str);
 				next_char++;
 			}
 		}
@@ -400,17 +400,17 @@ char *label_from_string(char *str) {
 			|| (*str >= 'a' && *str <= 'z') || (*str == '.') || (*str== '_')
 			|| (*str== '-') || (*str== ':'))
 		{
-			g_string_append_c(out, tolower(*str));
+			mmd_g_string_append_c(out, tolower(*str));
 		}           
 		str++;
 	}
 	label = out->str;
-	g_string_free(out, false);
+	mmd_g_string_free(out, false);
 	return label;
 }
 
 char *ascii_label_from_string(char *str) {
-	GString *out = g_string_new("");
+	MMD_GString *out = mmd_g_string_new("");
 	char *label;
 	char *next_char;
 
@@ -431,36 +431,36 @@ char *ascii_label_from_string(char *str) {
 			|| (*str >= 'a' && *str <= 'z') || (*str == '.') || (*str== '_')
 			|| (*str== '-') || (*str== ':'))
 		{
-			g_string_append_c(out, tolower(*str));
+			mmd_g_string_append_c(out, tolower(*str));
 		}           
 		str++;
 	}
 	label = out->str;
-	g_string_free(out, false);
+	mmd_g_string_free(out, false);
 	return label;
 }
 
 /* clean_string -- clean up whitespace */
 char * clean_string(char *str) {
-	GString *out = g_string_new("");
+	MMD_GString *out = mmd_g_string_new("");
 	char *clean;
 	bool block_whitespace = TRUE;
 	
 	while (*str != '\0') {
 		if ((*str == '\t') || (*str == ' ') || (*str == '\n') || (*str == '\r')) {
 			if (!block_whitespace) {
-				g_string_append_c(out, ' ');
+				mmd_g_string_append_c(out, ' ');
 				block_whitespace = TRUE;
 			}
 		} else {
-			g_string_append_c(out, *str);
+			mmd_g_string_append_c(out, *str);
 			block_whitespace = FALSE;
 		}
 		str++;
 	}
 	
 	clean = out->str;
-	g_string_free(out, false);
+	mmd_g_string_free(out, false);
 	return clean;
 }
 
@@ -471,11 +471,11 @@ char * string_from_node_tree(node *n) {
 	if (n == NULL)
 		return NULL;
 
-	GString *raw = g_string_new("");
+	MMD_GString *raw = mmd_g_string_new("");
 	print_raw_node_tree(raw, n);
 
 	result = raw->str;
-	g_string_free(raw, false);
+	mmd_g_string_free(raw, false);
 
 	return result;
 }
@@ -490,14 +490,14 @@ char * label_from_node_tree(node *n) {
 #ifdef DEBUG_ON
 		fprintf(stderr, "\n\nstart label from node_tree\n");
 #endif
-	GString *raw = g_string_new("");
+	MMD_GString *raw = mmd_g_string_new("");
 	print_raw_node_tree(raw, n);
 
 #ifdef DEBUG_ON
 		fprintf(stderr, "halfway('%s')\n",raw->str);
 #endif
 	label =  label_from_string(raw->str);
-	g_string_free(raw,true);
+	mmd_g_string_free(raw,true);
 #ifdef DEBUG_ON
 		fprintf(stderr, "finish label from node_tree: '%s'\n",label);
 #endif
@@ -514,14 +514,14 @@ char * ascii_label_from_node_tree(node *n) {
 #ifdef DEBUG_ON
 		fprintf(stderr, "\n\nstart label from node_tree\n");
 #endif
-	GString *raw = g_string_new("");
+	MMD_GString *raw = mmd_g_string_new("");
 	print_raw_node_tree(raw, n);
 
 #ifdef DEBUG_ON
 		fprintf(stderr, "halfway('%s')\n",raw->str);
 #endif
 	label =  ascii_label_from_string(raw->str);
-	g_string_free(raw,true);
+	mmd_g_string_free(raw,true);
 #ifdef DEBUG_ON
 		fprintf(stderr, "finish label from node_tree: '%s'\n",label);
 #endif
@@ -536,12 +536,12 @@ char *label_from_node(node *n) {
 	if (n == NULL)
 		return NULL;
 	
-	GString *raw = g_string_new("");
+	MMD_GString *raw = mmd_g_string_new("");
 	print_raw_node(raw, n);
 	label =  label_from_string(raw->str);
 	label2 = strdup(label);
 	free(label);
-	g_string_free(raw,true);
+	mmd_g_string_free(raw,true);
 	return label2;
 }
 
@@ -553,22 +553,22 @@ char *ascii_label_from_node(node *n) {
 	if (n == NULL)
 		return NULL;
 	
-	GString *raw = g_string_new("");
+	MMD_GString *raw = mmd_g_string_new("");
 	print_raw_node(raw, n);
 	label =  ascii_label_from_string(raw->str);
 	label2 = strdup(label);
 	free(label);
-	g_string_free(raw,true);
+	mmd_g_string_free(raw,true);
 	return label2;
 }
 
 /* print_raw_node - print an element as original text */
-void print_raw_node(GString *out, node *n) {
+void print_raw_node(MMD_GString *out, node *n) {
 	if (n->str != NULL) {
 #ifdef DEBUG_ON
 		fprintf(stderr, "print raw node %d: '%s'\n",n->key, n->str);
 #endif
-		g_string_append_printf(out, "%s", n->str);
+		mmd_g_string_append_printf(out, "%s", n->str);
 	} else if (n->key == LINK) {
 #ifdef DEBUG_ON
 		fprintf(stderr, "print raw node children from link\n");
@@ -577,7 +577,7 @@ void print_raw_node(GString *out, node *n) {
 		print_raw_node_tree(out, n->children);
 		/* need the label */
 		if ((n->link_data != NULL) && (n->link_data->label != NULL))
-			g_string_append_printf(out, "%s",n->link_data->label);
+			mmd_g_string_append_printf(out, "%s",n->link_data->label);
 	} else {
 		/* All others */
 #ifdef DEBUG_ON
@@ -591,7 +591,7 @@ void print_raw_node(GString *out, node *n) {
 }
 
 /* print_raw_node_tree - print a list of elements as original text */
-void print_raw_node_tree(GString *out, node *n) {
+void print_raw_node_tree(MMD_GString *out, node *n) {
 #ifdef DEBUG_ON
 	if (n != NULL)
 		fprintf(stderr, "start print_raw_node_tree: '%d'\n",n->key);
@@ -609,34 +609,34 @@ void print_raw_node_tree(GString *out, node *n) {
 /* preformat_text - allocate and copy text buffer while
  * performing tab expansion. */
 char * preformat_text(const char *text) {
-	GString *buf;
+	MMD_GString *buf;
 	char next_char;
 	int charstotab;
 	char *out;
 
 	int len = 0;
 
-	buf = g_string_new("");
+	buf = mmd_g_string_new("");
 
 	charstotab = TABSTOP;
 	while ((next_char = *text++) != '\0') {
 		switch (next_char) {
 			case '\t':
 				while (charstotab > 0)
-					g_string_append_c(buf, ' '), len++, charstotab--;
+					mmd_g_string_append_c(buf, ' '), len++, charstotab--;
 				break;
 			case '\n':
-				g_string_append_c(buf, '\n'), len++, charstotab = TABSTOP;
+				mmd_g_string_append_c(buf, '\n'), len++, charstotab = TABSTOP;
 				break;
 			default:
-				g_string_append_c(buf, next_char), len++, charstotab--;
+				mmd_g_string_append_c(buf, next_char), len++, charstotab--;
 		}
 		if (charstotab == 0)
 			charstotab = TABSTOP;
 	}
-	g_string_append_printf(buf, "\n\n");
+	mmd_g_string_append_printf(buf, "\n\n");
 	out = buf->str;
-	g_string_free(buf,false);
+	mmd_g_string_free(buf,false);
 	return(out);
 }
 
@@ -695,7 +695,7 @@ int tree_contains_key_count(node *list, int key) {
 char * metadata_keys(node *list) {
 	node *step = NULL;
 	step = list;
-	GString *out = g_string_new("");
+	MMD_GString *out = mmd_g_string_new("");
 	char *temp;
 		
 	while (step != NULL) {
@@ -704,20 +704,20 @@ char * metadata_keys(node *list) {
 			step = step->children;
 			while ( step != NULL) {
 				temp = label_from_string(step->str);
-				g_string_append_printf(out,"%s\n",temp);
+				mmd_g_string_append_printf(out,"%s\n",temp);
 				free(temp);
 				step = step->next;
 			}
 			
 			temp = out->str;
-			g_string_free(out, false);
+			mmd_g_string_free(out, false);
 
 			return temp;
 		}
 		step = step->next;
 	}
 	temp = out->str;
-	g_string_free(out, false);
+	mmd_g_string_free(out, false);
 
 	return temp;
 }

@@ -67,34 +67,34 @@ typedef struct
 	/* or append new strings? */
 	unsigned long currentStringBufferSize;
 	unsigned long currentStringLength;
-} GString;
+} MMD_GString;
 
-GString* g_string_new(char *startingString);
-char* g_string_free(GString* ripString, bool freeCharacterData);
+MMD_GString* mmd_g_string_new(char *startingString);
+char* mmd_g_string_free(MMD_GString* ripString, bool freeCharacterData);
 
-void g_string_append_c(GString* baseString, char appendedCharacter);
-void g_string_append(GString* baseString, char *appendedString);
+void mmd_g_string_append_c(MMD_GString* baseString, char appendedCharacter);
+void mmd_g_string_append(MMD_GString* baseString, char *appendedString);
 
-void g_string_prepend(GString* baseString, char* prependedString);
+void mmd_g_string_prepend(MMD_GString* baseString, char* prependedString);
 
-void g_string_append_printf(GString* baseString, char* format, ...);
+void mmd_g_string_append_printf(MMD_GString* baseString, char* format, ...);
 
-void g_string_insert(GString* baseString, size_t pos, char * insertedString);
-void g_string_insert_c(GString* baseString, size_t pos, char insertedCharacter);
-void g_string_insert_printf(GString* baseString, size_t pos, char* format, ...);
+void mmd_g_string_insert(MMD_GString* baseString, size_t pos, char * insertedString);
+void mmd_g_string_insert_c(MMD_GString* baseString, size_t pos, char insertedCharacter);
+void mmd_g_string_insert_printf(MMD_GString* baseString, size_t pos, char* format, ...);
 
-void g_string_erase(GString* baseString, size_t pos, size_t len);
+void mmd_g_string_erase(MMD_GString* baseString, size_t pos, size_t len);
 
 /* Just implement a very simple singly linked list. */
 
-typedef struct _GSList
+typedef struct _MMD_GSList
 {
 	void* data;	
-	struct _GSList* next;
-} GSList;
+	struct _MMD_GSList* next;
+} MMD_GSList;
 
-void g_slist_free(GSList* ripList);
-GSList* g_slist_prepend(GSList* targetElement, void* newElementData);
-GSList* g_slist_reverse(GSList* theList);
+void mmd_g_slist_free(MMD_GSList* ripList);
+MMD_GSList* mmd_g_slist_prepend(MMD_GSList* targetElement, void* newElementData);
+MMD_GSList* mmd_g_slist_reverse(MMD_GSList* theList);
 
 #endif

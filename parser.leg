@@ -488,10 +488,10 @@ ReferenceLink = ReferenceLinkDouble | ReferenceLinkSingle
 
 ReferenceLinkDouble = ( a:Label < Spnl > !"[]" b:Label )
 	{
-		GString *text = g_string_new("");
+		MMD_GString *text = mmd_g_string_new("");
 		print_raw_node_tree(text, b->children);
 		$$ = mk_link(a, text->str, NULL, NULL, NULL);
-		g_string_free(text, TRUE);
+		mmd_g_string_free(text, TRUE);
 		free_node_tree(b);
 	}
 
@@ -574,7 +574,7 @@ LinkReference = a:StartList NonindentSpace !"[]" l:Label ':' Spnl s:RefSrc
 		BlankLine+
 		{ 
 			/* Get label for referencing */
-			GString *text = g_string_new("");
+			MMD_GString *text = mmd_g_string_new("");
 			char *clean;
 			print_raw_node_tree(text, l->children);
 			clean = clean_string(text->str);
@@ -585,7 +585,7 @@ LinkReference = a:StartList NonindentSpace !"[]" l:Label ':' Spnl s:RefSrc
 			} else {
 				$$ = mk_link(NULL, clean, s->str, t->str, a);
 			}
-			g_string_free(text, TRUE);
+			mmd_g_string_free(text, TRUE);
 			free_node(s);
 			free_node(t);
 			free_node_tree(l);
@@ -677,11 +677,11 @@ AutoLabel = '[' < (!Newline !'^' !'#' !'%' . )( !Newline !']' . )+ > ']' &(!(Sp 
 	
 	/* And create a LINKREFERENCE so we can use it */
 	char *label = label_from_string(yytext);
-	GString *anchor = g_string_new(label);
-	g_string_prepend(anchor, "#");
+	MMD_GString *anchor = mmd_g_string_new(label);
+	mmd_g_string_prepend(anchor, "#");
 	ref = mk_link(NULL, label, anchor->str, NULL, NULL);
 
-	g_string_free(anchor, true);
+	mmd_g_string_free(anchor, true);
 	free(label);
 	((parser_data *)G->data)->autolabels = cons(ref,((parser_data *)G->data)->autolabels);
 	ref->key = LINKREFERENCE;
@@ -692,9 +692,9 @@ RawInline = ( '[' (!']' .)* ']' ) | .
 NoteReference = &{ ext(EXT_NOTES) } ( "[^" ) < ( !(Newline BlankLine) !']' RawInline )+ > ']'
 	{
 		/* Copy entire label, and ensure we are treated as a paragraph */
-		GString *original = g_string_new(yytext);
-		g_string_append_c(original,'\n');
-		g_string_append_c(original,'\n');
+		MMD_GString *original = mmd_g_string_new(yytext);
+		mmd_g_string_append_c(original,'\n');
+		mmd_g_string_append_c(original,'\n');
 
 		/* Create a note reference */
 		$$ = str(yytext);
@@ -708,7 +708,7 @@ NoteReference = &{ ext(EXT_NOTES) } ( "[^" ) < ( !(Newline BlankLine) !']' RawIn
 		
 		$$->children = source;
 
-		g_string_free(original, true);
+		mmd_g_string_free(original, true);
 	}
 
 Glossary =  &{ ext(EXT_NOTES) }

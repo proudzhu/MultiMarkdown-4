@@ -18,47 +18,47 @@
 #include "opml.h"
 
 /* begin_opml_output -- handle the initial prefix, if any */
-void begin_opml_output(GString *out, node* list, scratch_pad *scratch) {
+void begin_opml_output(MMD_GString *out, node* list, scratch_pad *scratch) {
 #ifdef DEBUG_ON
 	fprintf(stderr, "begin_opml_output\n");
 #endif
 	node *title;
 	
-	g_string_append_printf(out, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<opml version=\"1.0\">\n");
+	mmd_g_string_append_printf(out, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<opml version=\"1.0\">\n");
 	
 	if (tree_contains_key(list, METAKEY)) {
 		title = metadata_for_key("title", list);
 		if (title != NULL) {
 			char *temp_str;
-			GString *temp = g_string_new("");
-			g_string_append_printf(out, "<head><title>");
+			MMD_GString *temp = mmd_g_string_new("");
+			mmd_g_string_append_printf(out, "<head><title>");
 			print_raw_node_tree(temp, title->children);
 			temp_str = strdup(temp->str);
 			trim_trailing_whitespace(temp_str);
 			print_opml_string(out, temp_str);
-			g_string_append_printf(out, "</title></head>\n",temp_str);
+			mmd_g_string_append_printf(out, "</title></head>\n",temp_str);
 			free(temp_str);
-			g_string_free(temp, true);
+			mmd_g_string_free(temp, true);
 		}
 	}
-	g_string_append_printf(out, "<body>\n");
+	mmd_g_string_append_printf(out, "<body>\n");
 }
 
 /* end_opml_output -- close the document */
-void end_opml_output(GString *out, node* list, scratch_pad *scratch) {
+void end_opml_output(MMD_GString *out, node* list, scratch_pad *scratch) {
 #ifdef DEBUG_ON
 	fprintf(stderr, "end_opml_output\n");
 #endif
 	if (tree_contains_key(list, METAKEY)) {
-		g_string_append_printf(out, "<outline text=\"Metadata\">\n");
+		mmd_g_string_append_printf(out, "<outline text=\"Metadata\">\n");
 		print_opml_node_tree(out, list->children, scratch);
-		g_string_append_printf(out, "</outline>");
+		mmd_g_string_append_printf(out, "</outline>");
 	}
-	g_string_append_printf(out, "</body>\n</opml>");
+	mmd_g_string_append_printf(out, "</body>\n</opml>");
 }
 
 /* print_opml_node_tree -- convert node tree to LaTeX */
-void print_opml_node_tree(GString *out, node *list, scratch_pad *scratch) {
+void print_opml_node_tree(MMD_GString *out, node *list, scratch_pad *scratch) {
 #ifdef DEBUG_ON
 	fprintf(stderr, "print_opml_node_tree\n");
 #endif
@@ -81,7 +81,7 @@ void print_opml_node_tree(GString *out, node *list, scratch_pad *scratch) {
 }
 
 /* print_opml_section_and_children -- we want to stay inside the outline structure */
-void print_opml_section_and_children(GString *out, node *list, scratch_pad *scratch) {
+void print_opml_section_and_children(MMD_GString *out, node *list, scratch_pad *scratch) {
 #ifdef DEBUG_ON
 	fprintf(stderr, "print_opml_section_and_children: %d\n",list->key);
 #endif
@@ -97,11 +97,11 @@ void print_opml_section_and_children(GString *out, node *list, scratch_pad *scra
 			print_opml_section_and_children(out, list->next, scratch);
 		list = list->next;
 	}
-	g_string_append_printf(out, "</outline>\n");
+	mmd_g_string_append_printf(out, "</outline>\n");
 }
 
 /* print_opml_node -- convert given node to OPML and append */
-void print_opml_node(GString *out, node *n, scratch_pad *scratch) {
+void print_opml_node(MMD_GString *out, node *n, scratch_pad *scratch) {
 #ifdef DEBUG_ON
 	fprintf(stderr, "print_opml_node: %d\n",n->key);
 #endif
@@ -110,29 +110,29 @@ void print_opml_node(GString *out, node *n, scratch_pad *scratch) {
 			/* Metadata is present, so will need to be appended later */
 			break;
 		case METAKEY:
-			g_string_append_printf(out, "<outline text=\"");
+			mmd_g_string_append_printf(out, "<outline text=\"");
 			print_opml_string(out, n->str);
-			g_string_append_printf(out, "\" _note=\"");
+			mmd_g_string_append_printf(out, "\" _note=\"");
 			trim_trailing_newlines(n->children->str);
 			print_opml_string(out, n->children->str);
-			g_string_append_printf(out, "\"/>");
+			mmd_g_string_append_printf(out, "\"/>");
 			break;
 		case HEADINGSECTION:
 			/* Need to handle "nesting" properly */
-			g_string_append_printf(out, "<outline ");
+			mmd_g_string_append_printf(out, "<outline ");
 
 			/* Print header */
 			print_opml_node(out, n->children, scratch);
 
 			/* print remainder of paragraphs as note */
-			g_string_append_printf(out, " _note=\"");
+			mmd_g_string_append_printf(out, " _note=\"");
 			print_opml_node_tree(out, n->children->next, scratch);
-			g_string_append_printf(out, "\">");
+			mmd_g_string_append_printf(out, "\">");
 			break;
 		case H1: case H2: case H3: case H4: case H5: case H6: 
-			g_string_append_printf(out, "text=\"");
+			mmd_g_string_append_printf(out, "text=\"");
 			print_opml_string(out, n->str);
-			g_string_append_printf(out,"\"");
+			mmd_g_string_append_printf(out,"\"");
 			break;
 		case VERBATIM:
 		case VERBATIMFENCE:
@@ -145,12 +145,12 @@ void print_opml_node(GString *out, node *n, scratch_pad *scratch) {
 			print_opml_string(out, n->str);
 			break;
 		case LINEBREAK:
-			g_string_append_printf(out, "  &#10;");
+			mmd_g_string_append_printf(out, "  &#10;");
 			break;
 		case PLAIN:
 			print_opml_node_tree(out, n->children, scratch);
 			if ((n->next != NULL) && (n->next->key == PLAIN)) {
-				g_string_append_printf(out, "&#10;");
+				mmd_g_string_append_printf(out, "&#10;");
 			}
 			break;
 		default: 
@@ -163,26 +163,26 @@ void print_opml_node(GString *out, node *n, scratch_pad *scratch) {
 }
 
 /* print_opml_string - print string, escaping for OPML */
-void print_opml_string(GString *out, char *str) {
+void print_opml_string(MMD_GString *out, char *str) {
 	while (*str != '\0') {
 		switch (*str) {
 			case '&':
-				g_string_append_printf(out, "&amp;");
+				mmd_g_string_append_printf(out, "&amp;");
 				break;
 			case '<':
-				g_string_append_printf(out, "&lt;");
+				mmd_g_string_append_printf(out, "&lt;");
 				break;
 			case '>':
-				g_string_append_printf(out, "&gt;");
+				mmd_g_string_append_printf(out, "&gt;");
 				break;
 			case '"':
-				g_string_append_printf(out, "&quot;");
+				mmd_g_string_append_printf(out, "&quot;");
 				break;
 			case '\n': case '\r':
-				g_string_append_printf(out, "&#10;");
+				mmd_g_string_append_printf(out, "&#10;");
 				break;
 			default:
-				g_string_append_c(out, *str);
+				mmd_g_string_append_c(out, *str);
 		}
 		str++;
 	}

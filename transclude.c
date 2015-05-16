@@ -29,24 +29,24 @@ char * path_from_dir_base(char *dir, char *base) {
 #else
 	char sep = '/';
 #endif
-	GString *path = NULL;
+	MMD_GString *path = NULL;
 	char *result;
 
 	if ((base != NULL) && (base[0] == sep)) {
-		path = g_string_new(base);
+		path = mmd_g_string_new(base);
 	} else {
-		path = g_string_new(dir);
+		path = mmd_g_string_new(dir);
 
 		/* Ensure that folder ends in "/" */
 		if (!(path->str[strlen(path->str)-1] == sep) ) {
-			g_string_append_c(path, sep);
+			mmd_g_string_append_c(path, sep);
 		}
 
-		g_string_append_printf(path, "%s", base);
+		mmd_g_string_append_printf(path, "%s", base);
 	}
 
 	result = path->str;
-	g_string_free(path, false);
+	mmd_g_string_free(path, false);
 
 	return result;
 }
@@ -97,7 +97,7 @@ char * source_without_metadata(char * source, unsigned long extensions ) {
 	Pass the path to the current folder if available -- should be a full path. 
 
 	Keep track of what we're parsing to prevent recursion using stack. */
-void transclude_source(GString *source, char *basedir, char *stack, int output_format, GString *manifest) {
+void transclude_source(MMD_GString *source, char *basedir, char *stack, int output_format, MMD_GString *manifest) {
 	char *base = NULL;
 	char *path = NULL;
 	char *start;
@@ -115,10 +115,10 @@ void transclude_source(GString *source, char *basedir, char *stack, int output_f
 		base = strdup(basedir);
 	}
 
-	GString *folder = NULL;
-	GString *filename = NULL;
-	GString *filebuffer = NULL;
-	GString *stackstring = NULL;
+	MMD_GString *folder = NULL;
+	MMD_GString *filename = NULL;
+	MMD_GString *filebuffer = NULL;
+	MMD_GString *stackstring = NULL;
 
 	path = strdup(base);
 
@@ -136,12 +136,12 @@ void transclude_source(GString *source, char *basedir, char *stack, int output_f
 		return;
 	}
 
-	folder = g_string_new(path);
+	folder = mmd_g_string_new(path);
 
 	/* Ensure that folder ends in "/" */
 	/* TODO: adjust for windows */
 	if (!(folder->str[strlen(folder->str)-1] == '/') ) {
-		g_string_append_c(folder, '/');
+		mmd_g_string_append_c(folder, '/');
 	}
 
 	/* fprintf(stderr, "Transclude using '%s'\n", folder->str); */
@@ -167,44 +167,44 @@ void transclude_source(GString *source, char *basedir, char *stack, int output_f
 #endif
 
 			if (real[0] == sep) {
-				filename = g_string_new(real);
+				filename = mmd_g_string_new(real);
 			} else {
-				filename = g_string_new(folder->str);
-				g_string_append_printf(filename, "%s",real);
+				filename = mmd_g_string_new(folder->str);
+				mmd_g_string_append_printf(filename, "%s",real);
 			}
 
 			if (strcmp(filename->str,"./TOC") == 0) {
 				pos = stop - source->str;
 				start = strstr(source->str + pos,"{{");
-				g_string_free(filename, true);
+				mmd_g_string_free(filename, true);
 				continue;
 			}
 
 			/* Adjust for wildcard extensions */
 			/* But not if output_format == 0 */
 			if (output_format && strncmp(&filename->str[strlen(filename->str) - 2],".*",2) == 0) {
-				g_string_erase(filename, strlen(filename->str) - 2, 2);
+				mmd_g_string_erase(filename, strlen(filename->str) - 2, 2);
 				if (output_format == TEXT_FORMAT) {
-					g_string_append(filename,".txt");
+					mmd_g_string_append(filename,".txt");
 				} else if (output_format == HTML_FORMAT) {
-					g_string_append(filename,".html");
+					mmd_g_string_append(filename,".html");
 				} else if (output_format == LATEX_FORMAT) {
-					g_string_append(filename,".tex");
+					mmd_g_string_append(filename,".tex");
 				} else if (output_format == BEAMER_FORMAT) {
-					g_string_append(filename,".tex");
+					mmd_g_string_append(filename,".tex");
 				} else if (output_format == MEMOIR_FORMAT) {
-					g_string_append(filename,".tex");
+					mmd_g_string_append(filename,".tex");
 				} else if (output_format == ODF_FORMAT) {
-					g_string_append(filename,".fodt");
+					mmd_g_string_append(filename,".fodt");
 				} else if (output_format == OPML_FORMAT) {
-					g_string_append(filename,".opml");
+					mmd_g_string_append(filename,".opml");
 				} else if (output_format == LYX_FORMAT) {
-					g_string_append(filename,".lyx");
+					mmd_g_string_append(filename,".lyx");
 				} else if (output_format == RTF_FORMAT) {
-					g_string_append(filename,".rtf");
+					mmd_g_string_append(filename,".rtf");
 				} else {
 					/* default extension -- in this case we only have 1 */
-					g_string_append(filename,".txt");
+					mmd_g_string_append(filename,".txt");
 				}
 			}
 
@@ -220,7 +220,7 @@ void transclude_source(GString *source, char *basedir, char *stack, int output_f
 					(temp[strlen(filename->str)] == '\n') ){
 					/* Already on manifest, so don't add again */
 				} else {
-					g_string_append_printf(manifest,"%s\n",filename->str);
+					mmd_g_string_append_printf(manifest,"%s\n",filename->str);
 				}
 			}
 
@@ -231,7 +231,7 @@ void transclude_source(GString *source, char *basedir, char *stack, int output_f
 
 				if ((temp != NULL) && (temp[strlen(filename->str)] == '\n')){
 					start = strstr(source->str + pos,"{{");
-					g_string_free(filename, true);
+					mmd_g_string_free(filename, true);
 					continue;
 				}
 			}
@@ -246,20 +246,20 @@ void transclude_source(GString *source, char *basedir, char *stack, int output_f
 #else
 			if ((input = fopen(filename->str, "r")) != NULL ) {
 #endif
-				filebuffer = g_string_new("");
+				filebuffer = mmd_g_string_new("");
 
 				while ((curchar = fgetc(input)) != EOF)
-					g_string_append_c(filebuffer, curchar);
+					mmd_g_string_append_c(filebuffer, curchar);
 				
 				fclose(input);
 
 	 			pos = start - source->str;
 
-				g_string_erase(source, pos, 2 + stop - start);
+				mmd_g_string_erase(source, pos, 2 + stop - start);
 
 				/* Update stack list */
-				stackstring = g_string_new(stack);
-				g_string_append_printf(stackstring,"%s\n",filename->str);
+				stackstring = mmd_g_string_new(stack);
+				mmd_g_string_append_printf(stackstring,"%s\n",filename->str);
 
 
 				/* Recursively transclude files */
@@ -277,16 +277,16 @@ void transclude_source(GString *source, char *basedir, char *stack, int output_f
 				
 				temp = source_without_metadata(filebuffer->str, 0x000000);
 
-				g_string_insert(source, pos, temp);
+				mmd_g_string_insert(source, pos, temp);
 
 				pos += strlen(temp);
-				g_string_free(filebuffer, true);
-				g_string_free(stackstring, true);
+				mmd_g_string_free(filebuffer, true);
+				mmd_g_string_free(stackstring, true);
 			} else {
 				/* fprintf(stderr, "error opening file: %s\n", filename->str); */
 			}
 
-            g_string_free(filename, true);
+            mmd_g_string_free(filename, true);
         } else {
         	/* Our "match" was > 1000 characters long */
             pos = stop - source->str;
@@ -294,7 +294,7 @@ void transclude_source(GString *source, char *basedir, char *stack, int output_f
 		start = strstr(source->str + pos,"{{");
 	}
 
-	g_string_free(folder, true);
+	mmd_g_string_free(folder, true);
 	free(path);
 	free(base);
 }
@@ -302,16 +302,16 @@ void transclude_source(GString *source, char *basedir, char *stack, int output_f
 /* Allow for a footer to specify files to be appended to the end of the text, and then transcluded.
 	Useful for appending a list of footnotes, citations, abbreviations, etc. to each separate file,
 	but not including multiple copies when processing the master file. */
-void append_mmd_footer(GString *source) {
+void append_mmd_footer(MMD_GString *source) {
 	/* Look for mmd_footer metadata */
 	if (has_metadata(source->str, 0x000000)) {
 		char *meta = extract_metadata_value(source->str, 0x000000, "mmdfooter");
 		if (meta != NULL)
-			g_string_append_printf(source, "\n\n{{%s}}\n", meta);
+			mmd_g_string_append_printf(source, "\n\n{{%s}}\n", meta);
 	}
 }
 
-void prepend_mmd_header(GString *source) {
+void prepend_mmd_header(MMD_GString *source) {
 	/* Same thing, but to be inserted after metadata and before content */
 	if (has_metadata(source->str, 0x000000)) {
 		char *meta = extract_metadata_value(source->str, 0x000000, "mmdheader");
@@ -319,9 +319,9 @@ void prepend_mmd_header(GString *source) {
 			char *content = strstr(source->str, "\n\n");
 			if (content != NULL) {
 				size_t pos = content - source->str;
-				g_string_insert_printf(source, pos, "\n\n{{%s}}", meta);
+				mmd_g_string_insert_printf(source, pos, "\n\n{{%s}}", meta);
 			} else {
-				g_string_append_printf(source, "\n\n{{%s}}\n", meta);
+				mmd_g_string_append_printf(source, "\n\n{{%s}}\n", meta);
 			}
 		}
 	}

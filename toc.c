@@ -19,7 +19,7 @@
 
 
 /* print_toc_node_tree -- convert node tree to MultiMarkdown */
-void print_toc_node_tree(GString *out, node *list, scratch_pad *scratch) {
+void print_toc_node_tree(MMD_GString *out, node *list, scratch_pad *scratch) {
 #ifdef DEBUG_ON
 	fprintf(stderr, "print_toc_node_tree\n");
 #endif
@@ -42,7 +42,7 @@ void print_toc_node_tree(GString *out, node *list, scratch_pad *scratch) {
 }
 
 /* print_toc_section_and_children -- we want to stay inside the outline structure */
-void print_toc_section_and_children(GString *out, node *list, scratch_pad *scratch) {
+void print_toc_section_and_children(MMD_GString *out, node *list, scratch_pad *scratch) {
 #ifdef DEBUG_ON
 	fprintf(stderr, "print_toc_section_and_children: %d\n",list->key);
 #endif
@@ -65,7 +65,7 @@ void print_toc_section_and_children(GString *out, node *list, scratch_pad *scrat
 }
 
 /* print_toc_node -- convert given node to MultiMarkdown and append */
-void print_toc_node(GString *out, node *n, scratch_pad *scratch) {
+void print_toc_node(MMD_GString *out, node *n, scratch_pad *scratch) {
 	char *temp;
 	int i;
 
@@ -77,9 +77,9 @@ void print_toc_node(GString *out, node *n, scratch_pad *scratch) {
 			/* Need to handle "nesting" properly */
 			for (i = 0; i < scratch->toc_level; ++i)
 			{
-				g_string_append_printf(out, "\t");
+				mmd_g_string_append_printf(out, "\t");
 			}
-			g_string_append_printf(out, "* ");
+			mmd_g_string_append_printf(out, "* ");
 
 			/* Print header */
 			print_toc_node(out, n->children, scratch);
@@ -89,14 +89,14 @@ void print_toc_node(GString *out, node *n, scratch_pad *scratch) {
 			if ((n->children != NULL) && (n->children->key == AUTOLABEL)) {
 				temp = label_from_string(n->children->str);
 				/* use label for header since one was specified (MMD)*/
-				g_string_append_printf(out, "[");
+				mmd_g_string_append_printf(out, "[");
 				print_toc_node_tree(out, n->children, scratch);
-				g_string_append_printf(out, "][%s]\n", temp);
+				mmd_g_string_append_printf(out, "][%s]\n", temp);
 			} else {
 				temp = label_from_node_tree(n->children);
-				g_string_append_printf(out, "[");
+				mmd_g_string_append_printf(out, "[");
 				print_toc_node_tree(out, n->children, scratch);
-				g_string_append_printf(out, "][%s]\n", temp);
+				mmd_g_string_append_printf(out, "][%s]\n", temp);
 			}
 			free(temp);
 			break;
@@ -104,17 +104,17 @@ void print_toc_node(GString *out, node *n, scratch_pad *scratch) {
 			print_toc_string(out, n->str);
 			break;
 		case EMPH:
-			g_string_append_printf(out, "*");
+			mmd_g_string_append_printf(out, "*");
 			print_toc_node_tree(out, n->children, scratch);
-			g_string_append_printf(out, "*");
+			mmd_g_string_append_printf(out, "*");
 			break;
 		case STRONG:
-			g_string_append_printf(out, "**");
+			mmd_g_string_append_printf(out, "**");
 			print_toc_node_tree(out, n->children, scratch);
-			g_string_append_printf(out, "**");
+			mmd_g_string_append_printf(out, "**");
 			break;
 		case SPACE:
-			g_string_append_printf(out, "%s", n->str);
+			mmd_g_string_append_printf(out, "%s", n->str);
 			break;
 		case LINK:
 			print_toc_node_tree(out, n->children, scratch);
@@ -126,7 +126,7 @@ void print_toc_node(GString *out, node *n, scratch_pad *scratch) {
 		case AUTOLABEL:
 			break;
 		case VARIABLE:
-			g_string_append_printf(out, "[%%%s]",n->str);
+			mmd_g_string_append_printf(out, "[%%%s]",n->str);
 			break;
 		case LIST:
 			print_toc_node_tree(out, n->children, scratch);
@@ -140,17 +140,17 @@ void print_toc_node(GString *out, node *n, scratch_pad *scratch) {
 }
 
 /* print_toc_string - print string, escaping for MultiMarkdown */
-void print_toc_string(GString *out, char *str) {
+void print_toc_string(MMD_GString *out, char *str) {
 	while (*str != '\0') {
 		switch (*str) {
 			case '[':
-				g_string_append_printf(out, "\\[");
+				mmd_g_string_append_printf(out, "\\[");
 				break;
 			case ']':
-				g_string_append_printf(out, "\\]");
+				mmd_g_string_append_printf(out, "\\]");
 				break;
 			default:
-				g_string_append_c(out, *str);
+				mmd_g_string_append_c(out, *str);
 		}
 		str++;
 	}

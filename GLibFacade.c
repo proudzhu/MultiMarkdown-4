@@ -76,9 +76,9 @@ int asprintf( char **sptr, char *fmt, ... )
 #define kStringBufferStartingSize 1024
 #define kStringBufferGrowthMultiplier 2
 
-GString* g_string_new(char *startingString)
+MMD_GString* mmd_g_string_new(char *startingString)
 {
-	GString* newString = malloc(sizeof(GString));
+	MMD_GString* newString = malloc(sizeof(MMD_GString));
 
 	if (startingString == NULL) startingString = "";
 
@@ -98,7 +98,7 @@ GString* g_string_new(char *startingString)
 	return newString;
 }
 
-char* g_string_free(GString* ripString, bool freeCharacterData)
+char* mmd_g_string_free(MMD_GString* ripString, bool freeCharacterData)
 {	
 	if (ripString == NULL)
 		return NULL;
@@ -119,7 +119,7 @@ char* g_string_free(GString* ripString, bool freeCharacterData)
 	return returnedString;
 }
 
-static void ensureStringBufferCanHold(GString* baseString, size_t newStringSize)
+static void ensureStringBufferCanHold(MMD_GString* baseString, size_t newStringSize)
 {
 	size_t newBufferSizeNeeded = newStringSize + 1;
 	if (newBufferSizeNeeded > baseString->currentStringBufferSize)
@@ -145,7 +145,7 @@ static void ensureStringBufferCanHold(GString* baseString, size_t newStringSize)
 	}
 }
 
-void g_string_append(GString* baseString, char* appendedString)
+void mmd_g_string_append(MMD_GString* baseString, char* appendedString)
 {
 	if ((appendedString != NULL) && (strlen(appendedString) > 0))
 	{
@@ -159,7 +159,7 @@ void g_string_append(GString* baseString, char* appendedString)
 	}
 }
 
-void g_string_append_c(GString* baseString, char appendedCharacter)
+void mmd_g_string_append_c(MMD_GString* baseString, char appendedCharacter)
 {	
 	size_t newSizeNeeded = baseString->currentStringLength + 1;
 	ensureStringBufferCanHold(baseString, newSizeNeeded);
@@ -169,7 +169,7 @@ void g_string_append_c(GString* baseString, char appendedCharacter)
 	baseString->str[baseString->currentStringLength] = '\0';
 }
 
-void g_string_append_printf(GString* baseString, char* format, ...)
+void mmd_g_string_append_printf(MMD_GString* baseString, char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -178,13 +178,13 @@ void g_string_append_printf(GString* baseString, char* format, ...)
 	vasprintf(&formattedString, format, args);
 	if (formattedString != NULL)
 	{
-		g_string_append(baseString, formattedString);
+		mmd_g_string_append(baseString, formattedString);
 		free(formattedString);
 	}
 	va_end(args);
 } 
 
-void g_string_prepend(GString* baseString, char* prependedString)
+void mmd_g_string_prepend(MMD_GString* baseString, char* prependedString)
 {
 	if ((prependedString != NULL) && (strlen(prependedString) > 0))
 	{
@@ -199,7 +199,7 @@ void g_string_prepend(GString* baseString, char* prependedString)
 	}
 }
 
-void g_string_insert(GString* baseString, size_t pos, char * insertedString)
+void mmd_g_string_insert(MMD_GString* baseString, size_t pos, char * insertedString)
 {
 	if ((insertedString != NULL) && (strlen(insertedString) > 0))
 	{
@@ -218,7 +218,7 @@ void g_string_insert(GString* baseString, size_t pos, char * insertedString)
 	}
 }
 
-void g_string_insert_c(GString* baseString, size_t pos, char insertedCharacter)
+void mmd_g_string_insert_c(MMD_GString* baseString, size_t pos, char insertedCharacter)
 {	
 	if (pos > baseString->currentStringLength)
 		pos = baseString->currentStringLength;
@@ -235,7 +235,7 @@ void g_string_insert_c(GString* baseString, size_t pos, char insertedCharacter)
 }
 
 
-void g_string_insert_printf(GString* baseString, size_t pos, char* format, ...)
+void mmd_g_string_insert_printf(MMD_GString* baseString, size_t pos, char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -244,13 +244,13 @@ void g_string_insert_printf(GString* baseString, size_t pos, char* format, ...)
 	vasprintf(&formattedString, format, args);
 	if (formattedString != NULL)
 	{
-		g_string_insert(baseString, pos, formattedString);
+		mmd_g_string_insert(baseString, pos, formattedString);
 		free(formattedString);
 	}
 	va_end(args);
 }
 
-void g_string_erase(GString* baseString, size_t pos, size_t len)
+void mmd_g_string_erase(MMD_GString* baseString, size_t pos, size_t len)
 {
 	if ((pos > baseString->currentStringLength) || (len <= 0))
 		return;
@@ -269,12 +269,12 @@ void g_string_erase(GString* baseString, size_t pos, size_t len)
 
 /* GSList */
 
-void g_slist_free(GSList* ripList)
+void mmd_g_slist_free(MMD_GSList* ripList)
 {
-	GSList* thisListItem = ripList;
+	MMD_GSList* thisListItem = ripList;
 	while (thisListItem != NULL)
 	{
-		GSList* nextItem = thisListItem->next;
+		MMD_GSList* nextItem = thisListItem->next;
 		
 		/* I guess we don't release the data? Non-retained memory management is hard... let's figure it out later. */
 		free(thisListItem);
@@ -284,15 +284,15 @@ void g_slist_free(GSList* ripList)
 }
 
 /* Currently only used for markdown_output.c endnotes printing */
-GSList* g_slist_reverse(GSList* theList)
+MMD_GSList* mmd_g_slist_reverse(MMD_GSList* theList)
 {	
-	GSList* lastNodeSeen = NULL;
+	MMD_GSList* lastNodeSeen = NULL;
 	
 	/* Iterate the list items, tacking them on to our new reversed List as we find them */
-	GSList* listWalker = theList;
+	MMD_GSList* listWalker = theList;
 	while (listWalker != NULL)
 	{
-		GSList* nextNode = listWalker->next;
+		MMD_GSList* nextNode = listWalker->next;
 		listWalker->next = lastNodeSeen;
 		lastNodeSeen = listWalker;
 		listWalker = nextNode;
@@ -301,9 +301,9 @@ GSList* g_slist_reverse(GSList* theList)
 	return lastNodeSeen;
 }
 
-GSList* g_slist_prepend(GSList* targetElement, void* newElementData)
+MMD_GSList* mmd_g_slist_prepend(MMD_GSList* targetElement, void* newElementData)
 {
-	GSList* newElement = malloc(sizeof(GSList));
+	MMD_GSList* newElement = malloc(sizeof(MMD_GSList));
 	newElement->data = newElementData;
 	newElement->next = targetElement;
 	return newElement;

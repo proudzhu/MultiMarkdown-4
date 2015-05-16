@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <time.h>
-#include "glib.h"
+#include "GLibFacade.h"
 #include "libMultiMarkdown.h"
 
 #define TABSTOP 4
@@ -87,7 +87,7 @@ typedef struct {
 	int   lyx_table_total_rows;  /* CRC - The total number of rows in the table */
 	int   lyx_table_total_cols;  /* CRC - The total number of columns in the table */
 	node *lyx_table_caption;     /* CRC - Hold the table caption */
-	GString *lyx_debug_pad;      /* CRC - padding to indent debugging informaiton */
+	MMD_GString *lyx_debug_pad;      /* CRC - padding to indent debugging informaiton */
 } scratch_pad;
 
 /* Define smart typography languages -- first in list is default */
@@ -134,7 +134,7 @@ node * reverse_list(node *list);
 void   append_list(node *new, node *list);
 
 node    * mk_str_from_list(node *list, bool extra_newline);
-GString * concat_string_list(node *list);
+MMD_GString * concat_string_list(node *list);
 
 parser_data * mk_parser_data(const char *charbuf, unsigned long extensions);
 void   free_parser_data(parser_data *data);
@@ -167,8 +167,8 @@ char * label_from_node_tree(node *n);
 char * label_from_node(node *n);
 char * ascii_label_from_node_tree(node *n);
 char * ascii_label_from_node(node *n);
-void   print_raw_node(GString *out, node *n);
-void   print_raw_node_tree(GString *out, node*n);
+void   print_raw_node(MMD_GString *out, node *n);
+void   print_raw_node_tree(MMD_GString *out, node*n);
 
 char * correct_dimension_units(char *original);
 char * metadata_keys(node *list);

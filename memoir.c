@@ -18,7 +18,7 @@
 #include "memoir.h"
 
 /* print_memoir_node_tree -- convert node tree to LaTeX */
-void print_memoir_node_tree(GString *out, node *list, scratch_pad *scratch) {
+void print_memoir_node_tree(MMD_GString *out, node *list, scratch_pad *scratch) {
 	while (list != NULL) {
 		print_memoir_node(out, list, scratch);
 		list = list->next;
@@ -26,7 +26,7 @@ void print_memoir_node_tree(GString *out, node *list, scratch_pad *scratch) {
 }
 
 /* print_memoir_node -- convert given node to LaTeX and append */
-void print_memoir_node(GString *out, node *n, scratch_pad *scratch) {
+void print_memoir_node(MMD_GString *out, node *n, scratch_pad *scratch) {
 
 	/* If we are forcing a complete document, and METADATA isn't the first thing,
 		we need to close <head> */
@@ -43,16 +43,16 @@ void print_memoir_node(GString *out, node *n, scratch_pad *scratch) {
 			if ((n->children != NULL) && (n->children->key == VERBATIMTYPE)) {
 				trim_trailing_whitespace(n->children->str);
 				if (strlen(n->children->str) > 0) {
-					g_string_append_printf(out, "\\begin{adjustwidth}{2.5em}{2.5em}\n\\begin{lstlisting}[language=%s]\n", n->children->str);
+					mmd_g_string_append_printf(out, "\\begin{adjustwidth}{2.5em}{2.5em}\n\\begin{lstlisting}[language=%s]\n", n->children->str);
 					print_raw_node(out, n);
-					g_string_append_printf(out, "\n\\end{lstlisting}\n\\end{adjustwidth}");					
+					mmd_g_string_append_printf(out, "\n\\end{lstlisting}\n\\end{adjustwidth}");					
 					scratch->padded = 0;
 					break;
 				}
 			}
-			g_string_append_printf(out, "\\begin{adjustwidth}{2.5em}{2.5em}\n\\begin{verbatim}\n\n");
+			mmd_g_string_append_printf(out, "\\begin{adjustwidth}{2.5em}{2.5em}\n\\begin{verbatim}\n\n");
 			print_raw_node(out, n);
-			g_string_append_printf(out, "\n\\end{verbatim}\n\\end{adjustwidth}");
+			mmd_g_string_append_printf(out, "\n\\end{verbatim}\n\\end{adjustwidth}");
 			scratch->padded = 0;
 			break;
 		case HEADINGSECTION:
@@ -60,11 +60,11 @@ void print_memoir_node(GString *out, node *n, scratch_pad *scratch) {
 			break;
 		case DEFLIST:
 			pad(out, 2, scratch);
-			g_string_append_printf(out, "\\begin{description}");
+			mmd_g_string_append_printf(out, "\\begin{description}");
 			scratch->padded = 0;
 			print_memoir_node_tree(out, n->children, scratch);
 			pad(out, 1, scratch);
-			g_string_append_printf(out, "\\end{description}");
+			mmd_g_string_append_printf(out, "\\end{description}");
 			scratch->padded = 0;
 			break;
 		case DEFINITION:
